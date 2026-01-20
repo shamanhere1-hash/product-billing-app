@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 220 13% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+
+    --primary: 142 72% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 13% 95%;
+    --secondary-foreground: 220 13% 13%;
+
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 9% 46%;
+
+    --accent: 200 85% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --success: 142 72% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 142 72% 35%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 13% 13%;
+    --sidebar-primary: 142 72% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 95%;
+    --sidebar-accent-foreground: 220 13% 13%;
+    --sidebar-border: 220 13% 90%;
+    --sidebar-ring: 142 72% 35%;
+
+    /* Custom tokens */
+    --nav-button-gradient: linear-gradient(135deg, hsl(142 72% 30%) 0%, hsl(142 72% 40%) 100%);
+    --nav-button-shadow: 0 4px 14px -3px hsl(142 72% 35% / 0.4);
+    --card-shadow: 0 1px 3px 0 hsl(220 13% 13% / 0.08), 0 1px 2px -1px hsl(220 13% 13% / 0.08);
+    --card-shadow-lg: 0 10px 15px -3px hsl(220 13% 13% / 0.1), 0 4px 6px -4px hsl(220 13% 13% / 0.1);
+  }
+
+  .dark {
+    --background: 220 13% 5%;
+    --foreground: 0 0% 95%;
+
+    --card: 220 13% 8%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 220 13% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 142 72% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 9% 60%;
+
+    --accent: 200 85% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 142 72% 45%;
+
+    --sidebar-background: 220 13% 6%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 142 72% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 13% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 220 13% 18%;
+    --sidebar-ring: 142 72% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .nav-button {
+    @apply relative flex flex-col items-center justify-center gap-3 p-6 rounded-2xl text-primary-foreground font-semibold text-lg transition-all duration-300 ease-out;
+    background: var(--nav-button-gradient);
+    box-shadow: var(--nav-button-shadow);
+  }
+
+  .nav-button:hover {
+    @apply transform -translate-y-1;
+    box-shadow: 0 8px 25px -5px hsl(142 72% 35% / 0.5);
+  }
+
+  .nav-button:active {
+    @apply transform translate-y-0;
+  }
+
+  .nav-button-accent {
+    background: linear-gradient(135deg, hsl(200 85% 40%) 0%, hsl(200 85% 50%) 100%);
+    box-shadow: 0 4px 14px -3px hsl(200 85% 45% / 0.4);
+  }
+
+  .nav-button-accent:hover {
+    box-shadow: 0 8px 25px -5px hsl(200 85% 45% / 0.5);
+  }
+
+  .nav-button-warning {
+    background: linear-gradient(135deg, hsl(280 65% 45%) 0%, hsl(280 65% 55%) 100%);
+    box-shadow: 0 4px 14px -3px hsl(280 65% 50% / 0.4);
+  }
+
+  .nav-button-warning:hover {
+    box-shadow: 0 8px 25px -5px hsl(280 65% 50% / 0.5);
+  }
+
+  .nav-button-danger {
+    background: linear-gradient(135deg, hsl(0 72% 45%) 0%, hsl(0 72% 55%) 100%);
+    box-shadow: 0 4px 14px -3px hsl(0 72% 50% / 0.4);
+  }
+
+  .nav-button-danger:hover {
+    box-shadow: 0 8px 25px -5px hsl(0 72% 50% / 0.5);
+  }
+
+  .nav-button-secondary {
+    background: linear-gradient(135deg, hsl(38 92% 45%) 0%, hsl(38 92% 55%) 100%);
+    box-shadow: 0 4px 14px -3px hsl(38 92% 50% / 0.4);
+  }
+
+  .nav-button-secondary:hover {
+    box-shadow: 0 8px 25px -5px hsl(38 92% 50% / 0.5);
+  }
+
+  .product-card {
+    @apply bg-card rounded-xl p-4 transition-all duration-200 cursor-pointer border border-border;
+    box-shadow: var(--card-shadow);
+  }
+
+  .product-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--card-shadow-lg);
+  }
+
+  .cart-item {
+    @apply bg-card rounded-lg p-3 flex items-center justify-between gap-3 border border-border;
+    box-shadow: var(--card-shadow);
+  }
+
+  .bill-container {
+    @apply bg-card rounded-xl p-6 max-w-md mx-auto border border-border;
+    box-shadow: var(--card-shadow-lg);
+  }
+
+  .quantity-btn {
+    @apply w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors duration-150;
+  }
+
+  .quantity-btn-minus {
+    @apply bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground;
+  }
+
+  .quantity-btn-plus {
+    @apply bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground;
+  }
+}
+
+@layer utilities {
+  .page-container {
+    @apply min-h-screen bg-background p-4 md:p-6 lg:p-8;
+  }
+
+  .page-header {
+    @apply flex items-center gap-4 mb-6;
+  }
+
+  .page-title {
+    @apply text-2xl md:text-3xl font-bold text-foreground;
+  }
+
+  .grid-products {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-foreground mb-3;
+  }
+
+  .badge-count {
+    @apply absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full text-xs font-bold flex items-center justify-center;
+  }
+
+  .offline-indicator {
+    @apply fixed bottom-4 left-4 bg-warning text-warning-foreground px-4 py-2 rounded-full text-sm font-medium shadow-lg z-50 flex items-center gap-2;
+  }
+
+  .sync-indicator {
+    @apply fixed bottom-4 right-4 bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium shadow-lg z-50 flex items-center gap-2;
+  }
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .bill-container {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+}
