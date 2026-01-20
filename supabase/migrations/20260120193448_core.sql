@@ -42,26 +42,3 @@ CREATE POLICY "Allow all access to order_items" ON public.order_items FOR ALL US
 ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.order_items;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.products;
-
--- Insert sample products
-INSERT INTO public.products (name, price, category) VALUES
-  ('Notebook A4', 45, 'Notebooks'),
-  ('Notebook A5', 35, 'Notebooks'),
-  ('Ballpoint Pen', 10, 'Pens'),
-  ('Gel Pen', 25, 'Pens'),
-  ('Pencil HB', 5, 'Pencils'),
-  ('Mechanical Pencil', 40, 'Pencils'),
-  ('Eraser', 8, 'Accessories'),
-  ('Sharpener', 12, 'Accessories'),
-  ('Ruler 30cm', 15, 'Accessories'),
-  ('Scissors', 35, 'Accessories'),
-  ('Glue Stick', 20, 'Accessories'),
-  ('Highlighter Set', 60, 'Pens'),
-  ('Sticky Notes', 30, 'Paper'),
-  ('A4 Paper Pack', 150, 'Paper'),
-  ('File Folder', 25, 'Storage'),
-  ('Stapler', 80, 'Accessories'),
-  ('Staple Pins', 15, 'Accessories'),
-  ('Paper Clips', 10, 'Accessories'),
-  ('Correction Tape', 35, 'Accessories'),
-  ('Marker Set', 120, 'Pens');

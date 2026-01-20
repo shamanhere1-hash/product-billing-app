@@ -1,7 +1,7 @@
 -- Create table for storing hashed PINs (backend-only, no RLS read for regular users)
 CREATE TABLE public.app_pins (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  pin_type text NOT NULL UNIQUE CHECK (pin_type IN ('main_app', 'history_summary', 'owner')),
+  pin_type text NOT NULL UNIQUE CHECK (pin_type IN ('main_app', 'history_summary', 'owner', 'admin')),
   pin_hash text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
@@ -17,7 +17,7 @@ ALTER TABLE public.app_pins ENABLE ROW LEVEL SECURITY;
 CREATE TABLE public.app_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   session_token text NOT NULL UNIQUE,
-  session_type text NOT NULL CHECK (session_type IN ('main_app', 'history_summary', 'owner')),
+  session_type text NOT NULL CHECK (session_type IN ('main_app', 'history_summary', 'owner', 'admin')),
   expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -91,14 +91,18 @@ CREATE TRIGGER update_bill_counter_updated_at
   BEFORE UPDATE ON public.bill_counter
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
--- Insert default PINs (hashed with simple bcrypt-compatible hash for demo)
--- In production, these would be properly hashed via edge function
--- Default: main_app=1234, history_summary=5678, owner=9999
-INSERT INTO public.app_pins (pin_type, pin_hash) VALUES
-  ('main_app', '1234'),
-  ('history_summary', '5678'),
-  ('owner', '9999');
-
 -- Enable realtime for sessions and billing history
 ALTER PUBLICATION supabase_realtime ADD TABLE public.app_sessions;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.billing_history;
+
+-- Create table for rate limiting
+CREATE TABLE public.app_pin_attempts (
+  id uuid default gen_random_uuid() primary key,
+  ip_address text not null,
+  attempt_count int default 1,
+  last_attempt_at timestamptz default now(),
+  blocked_until timestamptz
+);
+
+-- Index for faster lookups
+CREATE INDEX idx_pin_attempts_ip on public.app_pin_attempts(ip_address);
