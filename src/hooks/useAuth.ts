@@ -13,21 +13,30 @@ const STORAGE_KEY = "ph_supplies_session";
 const OWNER_STORAGE_KEY = "ph_supplies_owner_session";
 const ADMIN_STORAGE_KEY = "ph_supplies_admin_session";
 
-export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(false);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+const getStoredSession = (key: string): Session | null => {
+  try {
+    const stored = localStorage.getItem(key);
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch {
+    return null;
+  }
+};
 
-  const getStoredSession = useCallback((key: string): Session | null => {
-    try {
-      const stored = localStorage.getItem(key);
-      if (!stored) return null;
-      return JSON.parse(stored);
-    } catch {
-      return null;
-    }
-  }, []);
+export function useAuth() {
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const session = getStoredSession(STORAGE_KEY);
+    return !!session && new Date(session.expiresAt) > new Date();
+  });
+  const [isOwnerAuthenticated, setIsOwnerAuthenticated] = useState(() => {
+    const session = getStoredSession(OWNER_STORAGE_KEY);
+    return !!session && new Date(session.expiresAt) > new Date();
+  });
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    const session = getStoredSession(ADMIN_STORAGE_KEY);
+    return !!session && new Date(session.expiresAt) > new Date();
+  });
+  const [loading, setLoading] = useState(true);
 
   const validateSession = useCallback(
     async (session: Session): Promise<boolean> => {
@@ -112,7 +121,7 @@ export function useAuth() {
     }
 
     setLoading(false);
-  }, [getStoredSession, validateSession]);
+  }, [validateSession]);
 
   useEffect(() => {
     checkAuth();
