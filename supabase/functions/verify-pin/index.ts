@@ -1,10 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import * as bcrypt from "https://esm.sh/bcryptjs@2.4.3";
+import * as bcrypt from "https://esm.sh/bcryptjs@3.0.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -20,7 +21,10 @@ serve(async (req) => {
     if (!pin || !pinType) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing pin or pinType" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -36,17 +40,31 @@ serve(async (req) => {
       .single();
 
     if (attempts) {
-      if (attempts.blocked_until && new Date(attempts.blocked_until) > new Date()) {
+      if (
+        attempts.blocked_until &&
+        new Date(attempts.blocked_until) > new Date()
+      ) {
         return new Response(
-          JSON.stringify({ success: false, error: "Too many attempts. Try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({
+            success: false,
+            error: "Too many attempts. Try again later.",
+          }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
       }
 
       // Reset count if last attempt was > 15 mins ago
-      const timeSinceLast = new Date().getTime() - new Date(attempts.last_attempt_at).getTime();
-      if (timeSinceLast > 15 * 60 * 1000) { // 15 mins
-        await supabase.from("app_pin_attempts").update({ attempt_count: 0, blocked_until: null }).eq("id", attempts.id);
+      const timeSinceLast =
+        new Date().getTime() - new Date(attempts.last_attempt_at).getTime();
+      if (timeSinceLast > 15 * 60 * 1000) {
+        // 15 mins
+        await supabase
+          .from("app_pin_attempts")
+          .update({ attempt_count: 0, blocked_until: null })
+          .eq("id", attempts.id);
       }
     }
 
@@ -60,7 +78,10 @@ serve(async (req) => {
     if (error || !pinData) {
       return new Response(
         JSON.stringify({ success: false, error: "PIN not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -82,20 +103,31 @@ serve(async (req) => {
       // UPDATE RATE LIMIT
       if (attempts) {
         const newCount = (attempts.attempt_count || 0) + 1;
-        const updates: any = { attempt_count: newCount, last_attempt_at: new Date() };
+        const updates: any = {
+          attempt_count: newCount,
+          last_attempt_at: new Date(),
+        };
         if (newCount >= 5) {
           const blockTime = new Date();
           blockTime.setMinutes(blockTime.getMinutes() + 15); // Block for 15 mins
           updates.blocked_until = blockTime;
         }
-        await supabase.from("app_pin_attempts").update(updates).eq("id", attempts.id);
+        await supabase
+          .from("app_pin_attempts")
+          .update(updates)
+          .eq("id", attempts.id);
       } else {
-        await supabase.from("app_pin_attempts").insert({ ip_address: clientIp, attempt_count: 1 });
+        await supabase
+          .from("app_pin_attempts")
+          .insert({ ip_address: clientIp, attempt_count: 1 });
       }
 
       return new Response(
         JSON.stringify({ success: false, error: "Invalid PIN" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -117,22 +149,23 @@ serve(async (req) => {
     const sessionToken = crypto.randomUUID();
     const expiresAt = new Date();
     // Admin session shorter? 10 mins as per req
-    const sessionDuration = pinType === 'admin' ? 10 : 120; // 10 mins for admin, 2 hours for others
+    const sessionDuration = pinType === "admin" ? 10 : 120; // 10 mins for admin, 2 hours for others
     expiresAt.setMinutes(expiresAt.getMinutes() + sessionDuration);
 
     // Store session
-    const { error: sessionError } = await supabase
-      .from("app_sessions")
-      .insert({
-        session_token: sessionToken,
-        session_type: pinType,
-        expires_at: expiresAt.toISOString(),
-      });
+    const { error: sessionError } = await supabase.from("app_sessions").insert({
+      session_token: sessionToken,
+      session_type: pinType,
+      expires_at: expiresAt.toISOString(),
+    });
 
     if (sessionError) {
       return new Response(
         JSON.stringify({ success: false, error: "Failed to create session" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -142,14 +175,14 @@ serve(async (req) => {
         sessionToken,
         expiresAt: expiresAt.toISOString(),
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error: unknown) {
     console.error("Error in verify-pin:", error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ success: false, error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ success: false, error: message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
