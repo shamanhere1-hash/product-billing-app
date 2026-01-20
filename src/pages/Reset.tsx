@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useBilling } from '@/context/BillingContext';
-import { BackButton } from '@/components/BackButton';
-import { AlertTriangle, RotateCcw, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useBilling } from "@/context/BillingContext";
+import { BackButton } from "@/components/BackButton";
+import { AlertTriangle, RotateCcw, X } from "lucide-react";
+import { toast } from "sonner";
 
 const Reset = () => {
   const navigate = useNavigate();
@@ -15,10 +15,10 @@ const Reset = () => {
 
   const handleReset = async () => {
     await resetAllBills();
-    toast.success('All data has been reset!', {
-      description: 'Cart and orders cleared successfully',
+    toast.success("All data has been reset!", {
+      description: "Cart and orders cleared successfully",
     });
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -51,7 +51,9 @@ const Reset = () => {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Total Amount</span>
-              <span className="font-medium text-foreground">₹{totalAmount}</span>
+              <span className="font-medium text-foreground">
+                ₹{totalAmount}
+              </span>
             </div>
           </div>
 

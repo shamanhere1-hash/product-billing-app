@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-type SessionType = 'main_app' | 'history_summary' | 'owner' | 'admin';
+type SessionType = "main_app" | "history_summary" | "owner" | "admin";
 
 interface Session {
   token: string;
@@ -9,9 +9,9 @@ interface Session {
   expiresAt: string;
 }
 
-const STORAGE_KEY = 'ph_supplies_session';
-const OWNER_STORAGE_KEY = 'ph_supplies_owner_session';
-const ADMIN_STORAGE_KEY = 'ph_supplies_admin_session';
+const STORAGE_KEY = "ph_supplies_session";
+const OWNER_STORAGE_KEY = "ph_supplies_owner_session";
+const ADMIN_STORAGE_KEY = "ph_supplies_admin_session";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,36 +29,48 @@ export function useAuth() {
     }
   }, []);
 
-  const validateSession = useCallback(async (session: Session): Promise<boolean> => {
-    // 1. Check local expiry first
-    if (new Date(session.expiresAt) < new Date()) {
-      return false;
-    }
+  const validateSession = useCallback(
+    async (session: Session): Promise<boolean> => {
+      // 1. Check local expiry first
+      if (new Date(session.expiresAt) < new Date()) {
+        return false;
+      }
 
-    // 2. If offline, trust local validity
-    if (!navigator.onLine) {
-      return true;
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('validate-session', {
-        body: { sessionToken: session.token, sessionType: session.type },
-      });
-
-      if (error) {
-        console.warn('Session validation network error, falling back to local (resilient mode):', error);
-        // NETWORK ERROR (or other non-auth error) -> Trust local
+      // 2. If offline, trust local validity
+      if (!navigator.onLine) {
         return true;
       }
 
-      // Explicit invalidation from server
-      return data?.valid === true;
-    } catch (error) {
-      console.warn('Session validation failed (exception), falling back to local:', error);
-      // Exception -> Trust local
-      return true;
-    }
-  }, []);
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "validate-session",
+          {
+            body: { sessionToken: session.token, sessionType: session.type },
+          },
+        );
+
+        if (error) {
+          console.warn(
+            "Session validation network error, falling back to local (resilient mode):",
+            error,
+          );
+          // NETWORK ERROR (or other non-auth error) -> Trust local
+          return true;
+        }
+
+        // Explicit invalidation from server
+        return data?.valid === true;
+      } catch (error) {
+        console.warn(
+          "Session validation failed (exception), falling back to local:",
+          error,
+        );
+        // Exception -> Trust local
+        return true;
+      }
+    },
+    [],
+  );
 
   const checkAuth = useCallback(async () => {
     setLoading(true);
@@ -110,9 +122,12 @@ export function useAuth() {
     return () => clearInterval(interval);
   }, [checkAuth]);
 
-  const verifyPin = async (pin: string, pinType: SessionType): Promise<{ success: boolean; error?: string }> => {
+  const verifyPin = async (
+    pin: string,
+    pinType: SessionType,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { data, error } = await supabase.functions.invoke('verify-pin', {
+      const { data, error } = await supabase.functions.invoke("verify-pin", {
         body: { pin, pinType },
       });
 
@@ -121,7 +136,7 @@ export function useAuth() {
       }
 
       if (!data?.success) {
-        return { success: false, error: data?.error || 'Invalid PIN' };
+        return { success: false, error: data?.error || "Invalid PIN" };
       }
 
       const session: Session = {
@@ -130,27 +145,32 @@ export function useAuth() {
         expiresAt: data.expiresAt,
       };
 
-      if (pinType === 'main_app') {
+      if (pinType === "main_app") {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
         setIsAuthenticated(true);
-      } else if (pinType === 'owner') {
+      } else if (pinType === "owner") {
         localStorage.setItem(OWNER_STORAGE_KEY, JSON.stringify(session));
         setIsOwnerAuthenticated(true);
-      } else if (pinType === 'admin') {
+      } else if (pinType === "admin") {
         localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(session));
         setIsAdminAuthenticated(true);
       }
 
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message || 'Authentication failed' };
+      return {
+        success: false,
+        error: error.message || "Authentication failed",
+      };
     }
   };
 
-  const verifyHistoryPin = async (pin: string): Promise<{ success: boolean; error?: string }> => {
+  const verifyHistoryPin = async (
+    pin: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { data, error } = await supabase.functions.invoke('verify-pin', {
-        body: { pin, pinType: 'history_summary' },
+      const { data, error } = await supabase.functions.invoke("verify-pin", {
+        body: { pin, pinType: "history_summary" },
       });
 
       if (error) {
@@ -159,11 +179,14 @@ export function useAuth() {
 
       return { success: data?.success === true, error: data?.error };
     } catch (error: any) {
-      return { success: false, error: error.message || 'Verification failed' };
+      return { success: false, error: error.message || "Verification failed" };
     }
   };
 
-  const changePin = async (pinType: SessionType, newPin: string): Promise<{ success: boolean; error?: string }> => {
+  const changePin = async (
+    pinType: SessionType,
+    newPin: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     // Check for Owner OR Admin session
     const ownerSession = getStoredSession(OWNER_STORAGE_KEY);
     const adminSession = getStoredSession(ADMIN_STORAGE_KEY);
@@ -171,11 +194,11 @@ export function useAuth() {
     const activeSession = ownerSession || adminSession;
 
     if (!activeSession) {
-      return { success: false, error: 'Authorization required' };
+      return { success: false, error: "Authorization required" };
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke('change-pin', {
+      const { data, error } = await supabase.functions.invoke("change-pin", {
         body: {
           ownerSessionToken: activeSession.token,
           pinType,
@@ -189,7 +212,7 @@ export function useAuth() {
 
       return { success: data?.success === true, error: data?.error };
     } catch (error: any) {
-      return { success: false, error: error.message || 'Failed to change PIN' };
+      return { success: false, error: error.message || "Failed to change PIN" };
     }
   };
 
@@ -208,16 +231,20 @@ export function useAuth() {
   const logoutAdmin = () => {
     localStorage.removeItem(ADMIN_STORAGE_KEY);
     setIsAdminAuthenticated(false);
-  }
+  };
 
   const getOwnerSessionToken = (): string | null => {
     const session = getStoredSession(OWNER_STORAGE_KEY);
     return session?.token ?? null;
   };
 
-  const checkAdminStatus = async (): Promise<{ exists: boolean; error?: string }> => {
+  const checkAdminStatus = async (): Promise<{
+    exists: boolean;
+    error?: string;
+  }> => {
     try {
-      const { data, error } = await supabase.functions.invoke('check-admin-status');
+      const { data, error } =
+        await supabase.functions.invoke("check-admin-status");
       if (error) return { exists: false, error: error.message };
       return { exists: data.exists === true };
     } catch (e: any) {
@@ -225,10 +252,12 @@ export function useAuth() {
     }
   };
 
-  const setupAdmin = async (newPin: string): Promise<{ success: boolean; error?: string }> => {
+  const setupAdmin = async (
+    newPin: string,
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const { data, error } = await supabase.functions.invoke('setup-admin', {
-        body: { newPin }
+      const { data, error } = await supabase.functions.invoke("setup-admin", {
+        body: { newPin },
       });
 
       if (error) return { success: false, error: error.message };
@@ -237,7 +266,7 @@ export function useAuth() {
       // Auto login
       const session: Session = {
         token: data.sessionToken,
-        type: 'admin',
+        type: "admin",
         expiresAt: data.expiresAt,
       };
       localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(session));

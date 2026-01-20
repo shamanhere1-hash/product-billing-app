@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, ShoppingBag, Check, User } from 'lucide-react';
-import { useBilling } from '@/context/BillingContext';
-import { ProductCard } from '@/components/ProductCard';
-import { CartItemComponent } from '@/components/CartItem';
-import { BackButton } from '@/components/BackButton';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, ShoppingBag, Check, User } from "lucide-react";
+import { useBilling } from "@/context/BillingContext";
+import { ProductCard } from "@/components/ProductCard";
+import { CartItemComponent } from "@/components/CartItem";
+import { BackButton } from "@/components/BackButton";
+import { toast } from "sonner";
 
 const TakingOrder = () => {
   const navigate = useNavigate();
@@ -19,39 +19,42 @@ const TakingOrder = () => {
     clearCart,
     createOrder,
     getCartTotal,
-    getCartItemCount
+    getCartItemCount,
   } = useBilling();
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [customerName, setCustomerName] = useState('');
+  const [customerName, setCustomerName] = useState("");
 
-  const categories = [...new Set(products.map(p => p.category))];
+  const categories = [...new Set(products.map((p) => p.category))];
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const handleCreateOrder = async () => {
     if (!customerName.trim()) {
-      toast.error('Customer Name is required', {
-        description: 'Please enter customer name to proceed',
+      toast.error("Customer Name is required", {
+        description: "Please enter customer name to proceed",
       });
       return;
     }
 
     const order = await createOrder(customerName);
     if (order) {
-      toast.success('Order created successfully!', {
+      toast.success("Order created successfully!", {
         description: `Order ${order.orderNumber} for ${order.customerName} - ₹${order.total}`,
       });
-      setCustomerName('');
-      navigate('/pack-check');
+      setCustomerName("");
+      navigate("/pack-check");
     } else {
-      toast.error('Cart is empty', {
-        description: 'Add some products to create an order',
+      toast.error("Cart is empty", {
+        description: "Add some products to create an order",
       });
     }
   };
@@ -83,21 +86,23 @@ const TakingOrder = () => {
             <div className="flex gap-2 overflow-x-auto pb-2">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!selectedCategory
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  !selectedCategory
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
               >
                 All
               </button>
-              {categories.map(category => (
+              {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                    }`}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    selectedCategory === category
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  }`}
                 >
                   {category}
                 </button>
@@ -107,7 +112,7 @@ const TakingOrder = () => {
 
           {/* Products Grid */}
           <div className="grid-products">
-            {filteredProducts.map(product => (
+            {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -139,7 +144,7 @@ const TakingOrder = () => {
             ) : (
               <>
                 <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
-                  {cart.map(item => (
+                  {cart.map((item) => (
                     <CartItemComponent
                       key={item.product.id}
                       item={item}
@@ -159,7 +164,7 @@ const TakingOrder = () => {
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === "Enter") {
                           handleCreateOrder();
                         }
                       }}
@@ -169,7 +174,9 @@ const TakingOrder = () => {
 
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Total</span>
-                    <span className="text-2xl font-bold text-primary">₹{getCartTotal()}</span>
+                    <span className="text-2xl font-bold text-primary">
+                      ₹{getCartTotal()}
+                    </span>
                   </div>
 
                   <div className="flex gap-2">

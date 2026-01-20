@@ -4,7 +4,8 @@ import * as bcrypt from "https://esm.sh/bcryptjs@2.4.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -18,7 +19,10 @@ serve(async (req) => {
     if (!ownerSessionToken || !pinType || !newPin) {
       return new Response(
         JSON.stringify({ success: false, error: "Missing required fields" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -36,18 +40,24 @@ serve(async (req) => {
     if (sessionError || !sessionData) {
       return new Response(
         JSON.stringify({ success: false, error: "Invalid session" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     // Check permissions: Owner can change all. Admin can change all (as per req "Admin Dashboard features: Change Main Access Pincode, Change Admin Code").
     // IMPORTANT: Requirements say "Change Main Access Pincode, Change Admin Code, change history / summary code" for Admin Dashboard.
     // Ideally Admin should represent the "Owner" capabilities in this context, or we allow both 'owner' and 'admin' session types.
-    const allowedTypes = ['owner', 'admin'];
+    const allowedTypes = ["owner", "admin"];
     if (!allowedTypes.includes(sessionData.session_type)) {
       return new Response(
         JSON.stringify({ success: false, error: "Unauthorized" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -55,7 +65,10 @@ serve(async (req) => {
     if (new Date(sessionData.expires_at) < new Date()) {
       return new Response(
         JSON.stringify({ success: false, error: "Session expired" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -63,7 +76,10 @@ serve(async (req) => {
     if (!/^\d{4,6}$/.test(newPin)) {
       return new Response(
         JSON.stringify({ success: false, error: "PIN must be 4-6 digits" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -79,20 +95,22 @@ serve(async (req) => {
     if (updateError) {
       return new Response(
         JSON.stringify({ success: false, error: "Failed to update PIN" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error: unknown) {
     console.error("Error in change-pin:", error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({ success: false, error: message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return new Response(JSON.stringify({ success: false, error: message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { CartItem as CartItemType } from '@/context/BillingContext';
-import { Minus, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
+import { useState } from "react";
+import { CartItem as CartItemType } from "@/context/BillingContext";
+import { Minus, Plus, Trash2, Edit2, Check, X } from "lucide-react";
 
 interface CartItemProps {
   item: CartItemType;
@@ -10,9 +10,17 @@ interface CartItemProps {
   readOnly?: boolean;
 }
 
-export function CartItemComponent({ item, onUpdateQuantity, onUpdatePrice, onRemove, readOnly = false }: CartItemProps) {
+export function CartItemComponent({
+  item,
+  onUpdateQuantity,
+  onUpdatePrice,
+  onRemove,
+  readOnly = false,
+}: CartItemProps) {
   const [isEditingPrice, setIsEditingPrice] = useState(false);
-  const [editPriceValue, setEditPriceValue] = useState(String(item.overriddenPrice ?? item.product.price));
+  const [editPriceValue, setEditPriceValue] = useState(
+    String(item.overriddenPrice ?? item.product.price),
+  );
 
   const handleSavePrice = () => {
     const newPrice = parseFloat(editPriceValue);
@@ -45,10 +53,16 @@ export function CartItemComponent({ item, onUpdateQuantity, onUpdatePrice, onRem
               onChange={(e) => setEditPriceValue(e.target.value)}
               autoFocus
             />
-            <button onClick={handleSavePrice} className="p-0.5 text-success hover:bg-success/10 rounded">
+            <button
+              onClick={handleSavePrice}
+              className="p-0.5 text-success hover:bg-success/10 rounded"
+            >
               <Check className="w-3 h-3" />
             </button>
-            <button onClick={handleCancelPrice} className="p-0.5 text-destructive hover:bg-destructive/10 rounded">
+            <button
+              onClick={handleCancelPrice}
+              className="p-0.5 text-destructive hover:bg-destructive/10 rounded"
+            >
               <X className="w-3 h-3" />
             </button>
           </div>
@@ -73,7 +87,6 @@ export function CartItemComponent({ item, onUpdateQuantity, onUpdatePrice, onRem
         )}
       </div>
 
-
       {!readOnly && (
         <div className="flex items-center gap-2">
           <button
@@ -94,7 +107,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onUpdatePrice, onRem
               }
             }}
             className="w-12 text-center font-semibold text-sm bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary/50 rounded appearance-none"
-            style={{ MozAppearance: 'textfield' }}
+            style={{ MozAppearance: "textfield" }}
           />
 
           <button
@@ -114,7 +127,9 @@ export function CartItemComponent({ item, onUpdateQuantity, onUpdatePrice, onRem
 
       {readOnly && (
         <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">×{item.quantity}</span>
+          <span className="text-sm text-muted-foreground">
+            ×{item.quantity}
+          </span>
           <span className="font-semibold text-foreground">
             ₹{displayPrice * item.quantity}
           </span>

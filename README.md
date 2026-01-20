@@ -14,13 +14,13 @@ A modern React application built with functional components, hooks, and best pra
 1. Clone the repository:
 
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/shamanhere1-hash/product-billing-app/
    ```
 
 2. Navigate to the project directory:
 
    ```sh
-   cd shop-flow-main
+   cd product-billing-app
    ```
 
 3. Install dependencies:
@@ -77,4 +77,3 @@ Open [http://localhost:8080](http://localhost:8080) with your browser to see the
 - `build`: Builds the production bundle.
 - `lint`: Runs ESLint to check for code quality issues.
 - `preview`: Preview the production build locally.
-

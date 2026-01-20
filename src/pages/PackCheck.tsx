@@ -1,35 +1,42 @@
-import { useState, useEffect } from 'react';
-import { useBilling, Order, CartItem, Product } from '@/context/BillingContext';
-import { BackButton } from '@/components/BackButton';
-import { OrderCard } from '@/components/OrderCard';
-import { Package, CheckCircle2, Trash2, Edit2, Save, X } from 'lucide-react';
-import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { CartItemComponent } from '@/components/CartItem';
-import { ProductSelector } from '@/components/ProductSelector';
+import { useState, useEffect } from "react";
+import { useBilling, Order, CartItem, Product } from "@/context/BillingContext";
+import { BackButton } from "@/components/BackButton";
+import { OrderCard } from "@/components/OrderCard";
+import { Package, CheckCircle2, Trash2, Edit2, Save, X } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { CartItemComponent } from "@/components/CartItem";
+import { ProductSelector } from "@/components/ProductSelector";
 
 const PackCheck = () => {
-  const { orders, updateOrderStatus, softDeleteOrder, updateOrder, products } = useBilling();
+  const { orders, updateOrderStatus, softDeleteOrder, updateOrder, products } =
+    useBilling();
 
   // Edit State
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [editingItems, setEditingItems] = useState<CartItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const pendingOrders = orders.filter(o => o.status === 'pending');
-  const packedOrders = orders.filter(o => o.status === 'packed');
+  const pendingOrders = orders.filter((o) => o.status === "pending");
+  const packedOrders = orders.filter((o) => o.status === "packed");
 
   const handleMarkPacked = async (orderId: string) => {
-    await updateOrderStatus(orderId, 'packed');
-    toast.success('Order marked as packed!', {
-      description: 'Ready for billing',
+    await updateOrderStatus(orderId, "packed");
+    toast.success("Order marked as packed!", {
+      description: "Ready for billing",
     });
   };
 
   const handleDelete = async (orderId: string) => {
-    if (confirm('Are you sure you want to delete this order?')) {
+    if (confirm("Are you sure you want to delete this order?")) {
       await softDeleteOrder(orderId);
-      toast.info('Order deleted');
+      toast.info("Order deleted");
     }
   };
 
@@ -41,47 +48,51 @@ const PackCheck = () => {
   };
 
   const handleAddProduct = (product: Product) => {
-    setEditingItems(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
+    setEditingItems((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
-        return prev.map(item =>
+        return prev.map((item) =>
           item.product.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
-            : item
+            : item,
         );
       }
       return [...prev, { product, quantity: 1 }];
     });
-    toast.success('Product added to order');
+    toast.success("Product added to order");
   };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    setEditingItems(prev => {
+    setEditingItems((prev) => {
       if (quantity <= 0) {
-        return prev.filter(item => item.product.id !== productId);
+        return prev.filter((item) => item.product.id !== productId);
       }
-      return prev.map(item =>
-        item.product.id === productId ? { ...item, quantity } : item
+      return prev.map((item) =>
+        item.product.id === productId ? { ...item, quantity } : item,
       );
     });
   };
 
   const handleUpdatePrice = (productId: string, price: number) => {
-    setEditingItems(prev =>
-      prev.map(item =>
-        item.product.id === productId ? { ...item, overriddenPrice: price } : item
-      )
+    setEditingItems((prev) =>
+      prev.map((item) =>
+        item.product.id === productId
+          ? { ...item, overriddenPrice: price }
+          : item,
+      ),
     );
   };
 
   const handleRemoveItem = (productId: string) => {
-    setEditingItems(prev => prev.filter(item => item.product.id !== productId));
+    setEditingItems((prev) =>
+      prev.filter((item) => item.product.id !== productId),
+    );
   };
 
   const calculateTotal = () => {
     return editingItems.reduce((sum, item) => {
       const price = item.overriddenPrice ?? item.product.price;
-      return sum + (price * item.quantity);
+      return sum + price * item.quantity;
     }, 0);
   };
 
@@ -104,11 +115,11 @@ const PackCheck = () => {
     const success = await updateOrder(editingOrder.id, editingItems, newTotal);
 
     if (success) {
-      toast.success('Order updated successfully');
+      toast.success("Order updated successfully");
       setIsDialogOpen(false);
       setEditingOrder(null);
     } else {
-      toast.error('Failed to update order');
+      toast.error("Failed to update order");
     }
   };
 
@@ -140,7 +151,7 @@ const PackCheck = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {pendingOrders.map(order => (
+              {pendingOrders.map((order) => (
                 <div key={order.id} className="space-y-3">
                   <OrderCard order={order} showItems />
                   <div className="grid grid-cols-2 gap-2">
@@ -191,7 +202,7 @@ const PackCheck = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {packedOrders.map(order => (
+              {packedOrders.map((order) => (
                 <OrderCard key={order.id} order={order} showItems />
               ))}
             </div>
@@ -208,9 +219,12 @@ const PackCheck = () => {
 
           <div className="flex-1 overflow-y-auto pr-2 space-y-2 my-4">
             <div className="mb-4">
-              <ProductSelector products={products} onSelect={handleAddProduct} />
+              <ProductSelector
+                products={products}
+                onSelect={handleAddProduct}
+              />
             </div>
-            {editingItems.map(item => (
+            {editingItems.map((item) => (
               <CartItemComponent
                 key={item.product.id}
                 item={item}
@@ -219,7 +233,9 @@ const PackCheck = () => {
               />
             ))}
             {editingItems.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">Order is empty</p>
+              <p className="text-center text-muted-foreground py-8">
+                Order is empty
+              </p>
             )}
           </div>
 
