@@ -27,10 +27,3 @@ dist-ssr
 .env
 .env.*
 !.env.example
-
-# Supabase
-supabase/.branches
-supabase/.temp
-supabase/functions/**/.env
-supabase/config.toml
-
