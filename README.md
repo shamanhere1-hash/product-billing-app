@@ -12,16 +12,19 @@ A modern React application built with functional components, hooks, and best pra
 ### Installation
 
 1. Clone the repository:
+
    ```sh
    git clone <repository-url>
    ```
 
 2. Navigate to the project directory:
+
    ```sh
    cd shop-flow-main
    ```
 
 3. Install dependencies:
+
    ```sh
    npm install
    # or
@@ -37,7 +40,6 @@ A modern React application built with functional components, hooks, and best pra
    - `VITE_SUPABASE_PROJECT_ID`: Your Supabase Project ID
    - `VITE_SUPABASE_PUBLISHABLE_KEY`: Your Supabase Anon Key
    - `VITE_SUPABASE_URL`: Your Supabase Project URL
-
 
 ### Running Locally
 
@@ -75,4 +77,4 @@ Open [http://localhost:8080](http://localhost:8080) with your browser to see the
 - `build`: Builds the production bundle.
 - `lint`: Runs ESLint to check for code quality issues.
 - `preview`: Preview the production build locally.
-   
+
