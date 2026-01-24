@@ -109,9 +109,7 @@ export function AuthGate({ children }: AuthGateProps) {
               </Button>
             </form>
 
-            <p className="text-xs text-muted-foreground text-center mt-6">
-              Default PIN: 1234
-            </p>
+
           </div>
         </div>
       </div>

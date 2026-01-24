@@ -81,8 +81,8 @@ export function useAuth() {
     [],
   );
 
-  const checkAuth = useCallback(async () => {
-    setLoading(true);
+  const checkAuth = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
 
     // Check main app session
     const mainSession = getStoredSession(STORAGE_KEY);
@@ -120,14 +120,14 @@ export function useAuth() {
       setIsAdminAuthenticated(false);
     }
 
-    setLoading(false);
+    if (!isBackground) setLoading(false);
   }, [validateSession]);
 
   useEffect(() => {
     checkAuth();
 
     // Check session validity every minute
-    const interval = setInterval(checkAuth, 60000);
+    const interval = setInterval(() => checkAuth(true), 60000);
     return () => clearInterval(interval);
   }, [checkAuth]);
 
