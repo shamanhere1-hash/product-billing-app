@@ -5,6 +5,7 @@ import { useBilling } from "@/context/BillingContext";
 import { ProductCard } from "@/components/ProductCard";
 import { CartItemComponent } from "@/components/CartItem";
 import { BackButton } from "@/components/BackButton";
+import { SelectedProductCard } from "@/components/SelectedProductCard";
 import { toast } from "sonner";
 
 const TakingOrder = () => {
@@ -74,7 +75,7 @@ const TakingOrder = () => {
         <h1 className="page-title">Taking Order</h1>
       </div>
 
-      <div className="flex flex-col-reverse lg:flex-row gap-6">
+      <div className="flex flex-col-reverse lg:flex-row gap-4">
         {/* Products Section */}
         <div className="flex-1">
           {/* Search & Filter */}
@@ -94,8 +95,8 @@ const TakingOrder = () => {
               <button
                 onClick={() => setSelectedCategory(selectedCategory === "Selected" ? null : "Selected")}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === "Selected"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   }`}
               >
                 Selected
@@ -105,8 +106,8 @@ const TakingOrder = () => {
                   key={category}
                   onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
                   className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                     }`}
                 >
                   {category}
@@ -122,19 +123,34 @@ const TakingOrder = () => {
                 <p>No items selected</p>
               </div>
             ) : (
-              filteredProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAdd={addToCart}
-                />
-              ))
+              filteredProducts.map((product) => {
+                const cartItem = cart.find((item) => item.product.id === product.id);
+
+                if (selectedCategory === "Selected" && cartItem) {
+                  return (
+                    <SelectedProductCard
+                      key={product.id}
+                      cartItem={cartItem}
+                      onUpdateQuantity={updateQuantity}
+                      onRemove={removeFromCart}
+                    />
+                  );
+                }
+
+                return (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAdd={addToCart}
+                  />
+                );
+              })
             )}
           </div>
         </div>
 
         {/* Cart Section */}
-        <div className="lg:w-96 sticky top-0 lg:top-4 z-50 lg:self-start bg-background/95 backdrop-blur pb-4 lg:bg-transparent lg:pb-0 max-h-[calc(100vh-2rem)] overflow-y-auto no-scrollbar transition-all duration-300">
+        <div className="lg:w-96 sticky top-0 lg:top-2 z-50 lg:self-start bg-background/95 backdrop-blur pb-4 lg:bg-transparent lg:pb-0 max-h-[calc(100vh-2rem)] overflow-y-auto no-scrollbar transition-all duration-300">
           <div className="bg-card rounded-xl p-4 shadow-sm border border-border mt-4 lg:mt-0">
             <div className="flex items-center gap-2 mb-4">
               <ShoppingBag className="w-5 h-5 text-primary" />
