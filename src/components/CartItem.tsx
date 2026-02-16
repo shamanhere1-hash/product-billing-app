@@ -67,8 +67,8 @@ export function CartItemComponent({
             <button
               onClick={handleSavePrice}
               className={`${isResponsive
-                  ? "p-2 rounded-full focus:ring-2 focus:ring-success/20 ring-offset-1"
-                  : "p-0.5 rounded"
+                ? "p-2 rounded-full focus:ring-2 focus:ring-success/20 ring-offset-1"
+                : "p-0.5 rounded"
                 } text-success hover:bg-success/10 transition-all`}
               aria-label="Save price"
             >
@@ -77,8 +77,8 @@ export function CartItemComponent({
             <button
               onClick={handleCancelPrice}
               className={`${isResponsive
-                  ? "p-2 rounded-full focus:ring-2 focus:ring-destructive/20 ring-offset-1"
-                  : "p-0.5 rounded"
+                ? "p-2 rounded-full focus:ring-2 focus:ring-destructive/20 ring-offset-1"
+                : "p-0.5 rounded"
                 } text-destructive hover:bg-destructive/10 transition-all`}
               aria-label="Cancel price edit"
             >
@@ -97,8 +97,8 @@ export function CartItemComponent({
                   setIsEditingPrice(true);
                 }}
                 className={`${isResponsive
-                    ? "p-1.5 -ml-1.5 rounded-full"
-                    : "p-0.5 hover:bg-muted"
+                  ? "p-1.5 -ml-1.5 rounded-full"
+                  : "p-0.5 hover:bg-muted"
                   } text-muted-foreground hover:text-primary transition-colors`}
                 title="Edit Price"
               >
@@ -116,18 +116,17 @@ export function CartItemComponent({
             className={`quantity-btn quantity-btn-minus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
               }`}
             aria-label="Decrease quantity"
-            disabled={item.quantity <= 1} // Optional: add disabled state styling if needed
           >
             <Minus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
           </button>
 
           <input
             type="number"
-            min="1"
+            min="0"
             value={item.quantity}
             onChange={(e) => {
               const val = parseInt(e.target.value);
-              if (!isNaN(val) && val > 0) {
+              if (!isNaN(val) && val >= 0) {
                 onUpdateQuantity(item.product.id, val);
               }
             }}
@@ -150,8 +149,8 @@ export function CartItemComponent({
           <button
             onClick={() => onRemove(item.product.id)}
             className={`${isResponsive
-                ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
-                : "ml-2 p-1.5 rounded-full"
+              ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
+              : "ml-2 p-1.5 rounded-full"
               } text-destructive hover:bg-destructive/10 transition-colors no-print`}
             title="Remove item"
             aria-label="Remove item"

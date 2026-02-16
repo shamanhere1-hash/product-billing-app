@@ -67,6 +67,30 @@ const TakingOrder = () => {
     }
   };
 
+  const handleUpdateQuantity = (productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      handleRemoveItem(productId);
+    } else {
+      updateQuantity(productId, quantity);
+    }
+  };
+
+  const handleRemoveItem = (productId: string) => {
+    const itemToRemove = cart.find((item) => item.product.id === productId);
+    if (!itemToRemove) return;
+
+    removeFromCart(productId);
+
+    toast("Item removed", {
+      description: `${itemToRemove.product.name} removed from cart`,
+      action: {
+        label: "Undo",
+        onClick: () => addToCart(itemToRemove.product, itemToRemove.quantity),
+      },
+      duration: 5000,
+    });
+  };
+
   return (
     <div className="page-container">
       {/* Header */}
@@ -75,7 +99,7 @@ const TakingOrder = () => {
         <h1 className="page-title">Taking Order</h1>
       </div>
 
-      <div className="flex flex-col-reverse lg:flex-row gap-4">
+      <div className="flex flex-col-reverse lg:flex-row gap-3">
         {/* Products Section */}
         <div className="flex-1">
           {/* Search & Filter */}
@@ -91,7 +115,7 @@ const TakingOrder = () => {
               />
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
               <button
                 onClick={() => setSelectedCategory(selectedCategory === "Selected" ? null : "Selected")}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === "Selected"
@@ -131,8 +155,8 @@ const TakingOrder = () => {
                     <SelectedProductCard
                       key={product.id}
                       cartItem={cartItem}
-                      onUpdateQuantity={updateQuantity}
-                      onRemove={removeFromCart}
+                      onUpdateQuantity={handleUpdateQuantity}
+                      onRemove={handleRemoveItem}
                     />
                   );
                 }
@@ -142,6 +166,7 @@ const TakingOrder = () => {
                     key={product.id}
                     product={product}
                     onAdd={addToCart}
+                    quantity={cartItem ? cartItem.quantity : 0}
                   />
                 );
               })
@@ -150,11 +175,31 @@ const TakingOrder = () => {
         </div>
 
         {/* Cart Section */}
-        <div className="lg:w-96 sticky top-0 lg:top-2 z-50 lg:self-start bg-background/95 backdrop-blur pb-4 lg:bg-transparent lg:pb-0 max-h-[calc(100vh-2rem)] overflow-y-auto no-scrollbar transition-all duration-300">
+        <div className="lg:w-96 sticky top-0 lg:top-2 z-50 lg:self-start bg-background/95 backdrop-blur lg:bg-transparent max-h-[calc(100vh-2rem)] overflow-y-auto no-scrollbar transition-all duration-300">
           <div className="bg-card rounded-xl p-4 shadow-sm border border-border mt-4 lg:mt-0">
             <div className="flex items-center gap-2 mb-4">
               <ShoppingBag className="w-5 h-5 text-primary" />
               <h2 className="font-semibold text-foreground">Cart</h2>
+
+              {cart.length > 0 && (
+                <button
+                  onClick={() => setIsCartExpanded(!isCartExpanded)}
+                  className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-primary hover:bg-primary/10 rounded-md transition-colors ml-2"
+                >
+                  {isCartExpanded ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      Hide
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      View
+                    </>
+                  )}
+                </button>
+              )}
+
               {getCartItemCount() > 0 && (
                 <span className="ml-auto px-2 py-0.5 bg-primary/10 text-primary rounded-full text-sm font-medium">
                   {getCartItemCount()} items
@@ -197,24 +242,6 @@ const TakingOrder = () => {
                   </div>
                 )}
 
-                {/* Expand/Collapse Button */}
-                <button
-                  onClick={() => setIsCartExpanded(!isCartExpanded)}
-                  className="w-full flex items-center justify-center gap-2 py-2 mb-4 text-sm font-medium text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                >
-                  {isCartExpanded ? (
-                    <>
-                      <ChevronUp className="w-4 h-4" />
-                      Hide Cart
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-4 h-4" />
-                      View Cart
-                    </>
-                  )}
-                </button>
-
                 {/* Expanded Cart Items */}
                 {isCartExpanded && (
                   <div className="space-y-2 max-h-60 overflow-y-auto mb-4 animate-fade-in">
@@ -222,8 +249,8 @@ const TakingOrder = () => {
                       <CartItemComponent
                         key={item.product.id}
                         item={item}
-                        onUpdateQuantity={updateQuantity}
-                        onRemove={removeFromCart}
+                        onUpdateQuantity={handleUpdateQuantity}
+                        onRemove={handleRemoveItem}
                       />
                     ))}
                   </div>

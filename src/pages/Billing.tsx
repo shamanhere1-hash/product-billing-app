@@ -38,15 +38,16 @@ const Billing = () => {
   const billedOrders = orders.filter((o) => o.status === "billed");
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    setEditingItems((prev) => {
-      if (quantity <= 0) {
-        return prev.filter((item) => item.product.id !== productId);
-      }
-      return prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item,
+    if (quantity <= 0) {
+      handleRemoveItem(productId);
+    } else {
+      setEditingItems((prev) =>
+        prev.map((item) =>
+          item.product.id === productId ? { ...item, quantity } : item,
+        ),
       );
-    });
-    setHasUnsavedChanges(true); // Simplified dirty check
+      setHasUnsavedChanges(true);
+    }
   };
 
   const handleUpdatePrice = (productId: string, price: number) => {
@@ -61,10 +62,33 @@ const Billing = () => {
   };
 
   const handleRemoveItem = (productId: string) => {
+    const itemToRemove = editingItems.find(
+      (item) => item.product.id === productId,
+    );
+
     setEditingItems((prev) =>
       prev.filter((item) => item.product.id !== productId),
     );
     setHasUnsavedChanges(true);
+
+    if (itemToRemove) {
+      toast("Item removed", {
+        description: `${itemToRemove.product.name} removed from order`,
+        action: {
+          label: "Undo",
+          onClick: () => {
+            setEditingItems((prev) => {
+              if (prev.find((i) => i.product.id === itemToRemove.product.id)) {
+                return prev;
+              }
+              return [...prev, itemToRemove];
+            });
+            setHasUnsavedChanges(true);
+          },
+        },
+        duration: 5000,
+      });
+    }
   };
 
   const handleAddProduct = (product: Product) => {
@@ -302,8 +326,8 @@ const Billing = () => {
               onClick={handleFinalize}
               disabled={hasUnsavedChanges}
               className={`flex-1 py-3 rounded-xl font-medium transition-opacity flex items-center justify-center gap-2 ${hasUnsavedChanges
-                  ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-accent text-accent-foreground hover:opacity-90"
+                ? "bg-muted text-muted-foreground cursor-not-allowed"
+                : "bg-accent text-accent-foreground hover:opacity-90"
                 }`}
             >
               <CheckCircle2 className="w-5 h-5" />

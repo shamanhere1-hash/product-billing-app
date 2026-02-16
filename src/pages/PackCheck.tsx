@@ -63,14 +63,15 @@ const PackCheck = () => {
   };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    setEditingItems((prev) => {
-      if (quantity <= 0) {
-        return prev.filter((item) => item.product.id !== productId);
-      }
-      return prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item,
+    if (quantity <= 0) {
+      handleRemoveItem(productId);
+    } else {
+      setEditingItems((prev) =>
+        prev.map((item) =>
+          item.product.id === productId ? { ...item, quantity } : item,
+        ),
       );
-    });
+    }
   };
 
   const handleUpdatePrice = (productId: string, price: number) => {
@@ -84,9 +85,31 @@ const PackCheck = () => {
   };
 
   const handleRemoveItem = (productId: string) => {
+    const itemToRemove = editingItems.find(
+      (item) => item.product.id === productId,
+    );
+
     setEditingItems((prev) =>
       prev.filter((item) => item.product.id !== productId),
     );
+
+    if (itemToRemove) {
+      toast("Item removed", {
+        description: `${itemToRemove.product.name} removed from order`,
+        action: {
+          label: "Undo",
+          onClick: () => {
+            setEditingItems((prev) => {
+              if (prev.find((i) => i.product.id === itemToRemove.product.id)) {
+                return prev;
+              }
+              return [...prev, itemToRemove];
+            });
+          },
+        },
+        duration: 5000,
+      });
+    }
   };
 
   const calculateTotal = () => {
