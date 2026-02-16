@@ -8,6 +8,7 @@ interface CartItemProps {
   onUpdatePrice?: (productId: string, price: number) => void;
   onRemove: (productId: string) => void;
   readOnly?: boolean;
+  variant?: "default" | "responsive";
 }
 
 export function CartItemComponent({
@@ -16,6 +17,7 @@ export function CartItemComponent({
   onUpdatePrice,
   onRemove,
   readOnly = false,
+  variant = "default",
 }: CartItemProps) {
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [editPriceValue, setEditPriceValue] = useState(
@@ -37,37 +39,54 @@ export function CartItemComponent({
 
   const displayPrice = item.overriddenPrice ?? item.product.price;
 
+  const isResponsive = variant === "responsive";
+
   return (
-    <div className="cart-item animate-slide-in">
-      <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-foreground text-sm truncate">
+    <div
+      className={`cart-item animate-slide-in ${isResponsive ? "flex-wrap sm:flex-nowrap gap-y-3" : ""
+        }`}
+    >
+      <div className={`flex-1 min-w-0 ${isResponsive ? "min-w-[120px]" : ""}`}>
+        <h4
+          className={`font-medium text-foreground text-sm truncate ${isResponsive ? "pr-2" : ""
+            }`}
+        >
           {item.product.name}
         </h4>
 
         {isEditingPrice && !readOnly ? (
-          <div className="flex items-center gap-1 mt-1">
+          <div className={`flex items-center ${isResponsive ? "gap-2 mt-2" : "gap-1 mt-1"}`}>
             <input
               type="number"
-              className="w-20 px-1 py-0.5 text-xs border rounded"
+              className={`${isResponsive ? "w-24 px-2 py-1.5 text-sm" : "w-20 px-1 py-0.5 text-xs"
+                } border rounded bg-background`}
               value={editPriceValue}
               onChange={(e) => setEditPriceValue(e.target.value)}
               autoFocus
             />
             <button
               onClick={handleSavePrice}
-              className="p-0.5 text-success hover:bg-success/10 rounded"
+              className={`${isResponsive
+                  ? "p-2 rounded-full focus:ring-2 focus:ring-success/20 ring-offset-1"
+                  : "p-0.5 rounded"
+                } text-success hover:bg-success/10 transition-all`}
+              aria-label="Save price"
             >
-              <Check className="w-3 h-3" />
+              <Check className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
             </button>
             <button
               onClick={handleCancelPrice}
-              className="p-0.5 text-destructive hover:bg-destructive/10 rounded"
+              className={`${isResponsive
+                  ? "p-2 rounded-full focus:ring-2 focus:ring-destructive/20 ring-offset-1"
+                  : "p-0.5 rounded"
+                } text-destructive hover:bg-destructive/10 transition-all`}
+              aria-label="Cancel price edit"
             >
-              <X className="w-3 h-3" />
+              <X className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
             </button>
           </div>
         ) : (
-          <div className="flex items-center gap-2 mt-1">
+          <div className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"}`}>
             <p className="text-xs text-muted-foreground">
               ₹{displayPrice} × {item.quantity}
             </p>
@@ -77,10 +96,13 @@ export function CartItemComponent({
                   setEditPriceValue(String(displayPrice));
                   setIsEditingPrice(true);
                 }}
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className={`${isResponsive
+                    ? "p-1.5 -ml-1.5 rounded-full"
+                    : "p-0.5 hover:bg-muted"
+                  } text-muted-foreground hover:text-primary transition-colors`}
                 title="Edit Price"
               >
-                <Edit2 className="w-3 h-3" />
+                <Edit2 className={isResponsive ? "w-3.5 h-3.5" : "w-3 h-3"} />
               </button>
             )}
           </div>
@@ -88,12 +110,15 @@ export function CartItemComponent({
       </div>
 
       {!readOnly && (
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center ${isResponsive ? "gap-3 ml-auto sm:ml-0" : "gap-2"}`}>
           <button
             onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
-            className="quantity-btn quantity-btn-minus no-print"
+            className={`quantity-btn quantity-btn-minus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
+              }`}
+            aria-label="Decrease quantity"
+            disabled={item.quantity <= 1} // Optional: add disabled state styling if needed
           >
-            <Minus className="w-3 h-3" />
+            <Minus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
           </button>
 
           <input
@@ -106,21 +131,32 @@ export function CartItemComponent({
                 onUpdateQuantity(item.product.id, val);
               }
             }}
-            className="w-12 text-center font-semibold text-sm bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary/50 rounded appearance-none"
+            className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"
+              } text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none`}
             style={{ MozAppearance: "textfield" }}
+            aria-label="Quantity"
           />
 
           <button
             onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
-            className="quantity-btn quantity-btn-plus no-print"
+            className={`quantity-btn quantity-btn-plus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
+              }`}
+            aria-label="Increase quantity"
           >
-            <Plus className="w-3 h-3" />
+            <Plus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
           </button>
+
           <button
             onClick={() => onRemove(item.product.id)}
-            className="ml-2 p-1.5 rounded-full text-destructive hover:bg-destructive/10 transition-colors no-print"
+            className={`${isResponsive
+                ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
+                : "ml-2 p-1.5 rounded-full"
+              } text-destructive hover:bg-destructive/10 transition-colors no-print`}
+            title="Remove item"
+            aria-label="Remove item"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className={isResponsive ? "w-4 h-4" : "w-4 h-4"} />
           </button>
         </div>
       )}

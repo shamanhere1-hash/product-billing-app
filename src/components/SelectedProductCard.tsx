@@ -39,11 +39,11 @@ export function SelectedProductCard({
 
                     <input
                         type="number"
-                        min="1"
+                        min="0"
                         value={quantity}
                         onChange={(e) => {
                             const val = parseInt(e.target.value);
-                            if (!isNaN(val) && val > 0) {
+                            if (!isNaN(val) && val >= 0) {
                                 onUpdateQuantity(product.id, val);
                             }
                         }}

@@ -258,6 +258,7 @@ const Billing = () => {
                     onUpdateQuantity={handleUpdateQuantity}
                     onUpdatePrice={handleUpdatePrice}
                     onRemove={handleRemoveItem}
+                    variant="responsive"
                   />
                 ))}
                 {editingItems.length === 0 && (
@@ -300,11 +301,10 @@ const Billing = () => {
             <button
               onClick={handleFinalize}
               disabled={hasUnsavedChanges}
-              className={`flex-1 py-3 rounded-xl font-medium transition-opacity flex items-center justify-center gap-2 ${
-                hasUnsavedChanges
+              className={`flex-1 py-3 rounded-xl font-medium transition-opacity flex items-center justify-center gap-2 ${hasUnsavedChanges
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                   : "bg-accent text-accent-foreground hover:opacity-90"
-              }`}
+                }`}
             >
               <CheckCircle2 className="w-5 h-5" />
               Finalize Order
