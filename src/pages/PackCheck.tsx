@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useBilling, Order, CartItem, Product } from "@/context/BillingContext";
 import { BackButton } from "@/components/BackButton";
 import { OrderCard } from "@/components/OrderCard";
-import { Package, CheckCircle2, Trash2, Edit2, Save, X } from "lucide-react";
+import { Package, CheckCircle2, Trash2, Edit2, Save } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -11,6 +11,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CartItemComponent } from "@/components/CartItem";
 import { ProductSelector } from "@/components/ProductSelector";
 
@@ -22,6 +27,7 @@ const PackCheck = () => {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [editingItems, setEditingItems] = useState<CartItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activePopoverId, setActivePopoverId] = useState<string | null>(null);
 
   const pendingOrders = orders.filter((o) => o.status === "pending");
   const packedOrders = orders.filter((o) => o.status === "packed");
@@ -74,16 +80,6 @@ const PackCheck = () => {
     }
   };
 
-  const handleUpdatePrice = (productId: string, price: number) => {
-    setEditingItems((prev) =>
-      prev.map((item) =>
-        item.product.id === productId
-          ? { ...item, overriddenPrice: price }
-          : item,
-      ),
-    );
-  };
-
   const handleRemoveItem = (productId: string) => {
     const itemToRemove = editingItems.find(
       (item) => item.product.id === productId,
@@ -112,11 +108,28 @@ const PackCheck = () => {
     }
   };
 
+  const handleToggleStock = (productId: string) => {
+    setEditingItems((prev) =>
+      prev.map((item) =>
+        item.product.id === productId
+          ? { ...item, isOutOfStock: !item.isOutOfStock }
+          : item,
+      ),
+    );
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    handleRemoveItem(productId);
+    setActivePopoverId(null);
+  };
+
   const calculateTotal = () => {
-    return editingItems.reduce((sum, item) => {
-      const price = item.overriddenPrice ?? item.product.price;
-      return sum + price * item.quantity;
-    }, 0);
+    return editingItems
+      .filter((item) => !item.isOutOfStock)
+      .reduce((sum, item) => {
+        const price = item.overriddenPrice ?? item.product.price;
+        return sum + price * item.quantity;
+      }, 0);
   };
 
   const handleSaveChanges = async () => {
@@ -248,12 +261,46 @@ const PackCheck = () => {
               />
             </div>
             {editingItems.map((item) => (
-              <CartItemComponent
+              <Popover
                 key={item.product.id}
-                item={item}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemove={handleRemoveItem}
-              />
+                open={activePopoverId === item.product.id}
+                onOpenChange={(open) => {
+                  if (open) setActivePopoverId(item.product.id);
+                  else setActivePopoverId(null);
+                }}
+              >
+                <PopoverTrigger asChild>
+                  <div className="w-full">
+                    <CartItemComponent
+                      item={item}
+                      onUpdateQuantity={handleUpdateQuantity}
+                      onRemove={handleRemoveItem}
+                      hideDelete={true}
+                      onClick={() => setActivePopoverId(item.product.id)}
+                      onToggleStock={handleToggleStock}
+                    />
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent className="w-48 p-2" align="end">
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleToggleStock(item.product.id)}
+                      className={`w-full py-2 px-3 rounded-md text-sm font-medium transition-colors ${item.isOutOfStock
+                        ? "bg-success/10 text-success hover:bg-success/20"
+                        : "bg-warning/10 text-warning hover:bg-warning/20"
+                        }`}
+                    >
+                      {item.isOutOfStock ? "Mark In Stock" : "Out of Stock"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(item.product.id)}
+                      className="w-full py-2 px-3 rounded-md text-sm font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                    >
+                      Delete Product
+                    </button>
+                  </div>
+                </PopoverContent>
+              </Popover>
             ))}
             {editingItems.length === 0 && (
               <p className="text-center text-muted-foreground py-8">

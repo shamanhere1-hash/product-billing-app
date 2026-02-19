@@ -36,11 +36,10 @@ export function OrderCard({
 
   return (
     <div
-      className={`bg-card rounded-xl p-4 shadow-sm border border-border animate-fade-in ${
-        onSelect
+      className={`bg-card rounded-xl p-4 shadow-sm border border-border animate-fade-in ${onSelect
           ? "cursor-pointer hover:border-primary/30 transition-colors"
           : ""
-      }`}
+        }`}
       onClick={() => onSelect?.(order)}
     >
       <div className="flex items-start justify-between mb-3">
@@ -72,11 +71,19 @@ export function OrderCard({
         <div className="space-y-2 mb-3 py-3 border-y border-border">
           {order.items.map((item) => (
             <div key={item.product.id} className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                {item.product.name} × {item.quantity}
+              <span
+                className={`text-muted-foreground ${item.isOutOfStock ? "line-through decoration-destructive" : ""}`}
+              >
+                {item.product.name} {item.isOutOfStock ? "" : `× ${item.quantity}`}
               </span>
               <span className="font-medium text-foreground">
-                ₹{item.product.price * item.quantity}
+                {item.isOutOfStock ? (
+                  <span className="text-destructive font-medium text-xs">
+                    Stock Out
+                  </span>
+                ) : (
+                  `₹${item.product.price * item.quantity}`
+                )}
               </span>
             </div>
           ))}

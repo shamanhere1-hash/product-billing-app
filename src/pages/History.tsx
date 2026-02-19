@@ -250,18 +250,30 @@ export default function History() {
                       className="flex justify-between text-sm py-1 border-b border-border/30 last:border-0"
                     >
                       <div>
-                        <span className="font-medium">{item.product.name}</span>
-                        <div className="text-xs text-muted-foreground">
-                          Qty: {item.quantity} × ₹
-                          {item.overriddenPrice ?? item.product.price}
-                        </div>
+                        <span
+                          className={`font-medium ${item.isOutOfStock
+                            ? "line-through decoration-destructive text-muted-foreground"
+                            : ""
+                            }`}
+                        >
+                          {item.product.name}
+                        </span>
+                        {!item.isOutOfStock && (
+                          <div className="text-xs text-muted-foreground">
+                            Qty: {item.quantity} × ₹
+                            {item.overriddenPrice ?? item.product.price}
+                          </div>
+                        )}
                       </div>
                       <span className="font-medium">
-                        ₹
-                        {(
-                          (item.overriddenPrice ?? item.product.price) *
-                          item.quantity
-                        ).toFixed(2)}
+                        {item.isOutOfStock ? (
+                          <span className="text-destructive font-bold text-xs">
+                            Stock Out
+                          </span>
+                        ) : (
+                          `₹${((item.overriddenPrice ?? item.product.price) *
+                            item.quantity).toFixed(2)}`
+                        )}
                       </span>
                     </div>
                   ))}

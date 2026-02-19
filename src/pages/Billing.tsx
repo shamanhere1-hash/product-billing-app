@@ -107,8 +107,20 @@ const Billing = () => {
     toast.success("Product added to order", { duration: 1500 });
   };
 
+  const handleToggleStock = (productId: string) => {
+    setEditingItems((prev) =>
+      prev.map((item) =>
+        item.product.id === productId
+          ? { ...item, isOutOfStock: !item.isOutOfStock }
+          : item,
+      ),
+    );
+    setHasUnsavedChanges(true);
+  };
+
   const calculateTotal = () => {
     return editingItems.reduce((sum, item) => {
+      if (item.isOutOfStock) return sum;
       const price = item.overriddenPrice ?? item.product.price;
       return sum + price * item.quantity;
     }, 0);
@@ -244,21 +256,52 @@ const Billing = () => {
                   {editingItems.map((item, index) => (
                     <tr
                       key={index}
-                      className="border-b border-border/50 last:border-0"
+                      className={`border-b border-border/50 last:border-0 ${item.isOutOfStock ? "bg-muted/30" : ""
+                        }`}
                     >
                       <td className="py-2 text-foreground">
-                        {item.product.name}
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={
+                              item.isOutOfStock
+                                ? "line-through decoration-destructive text-muted-foreground"
+                                : ""
+                            }
+                          >
+                            {item.product.name}
+                          </span>
+                        </div>
                       </td>
                       <td className="py-2 text-center text-muted-foreground">
                         {item.quantity}
                       </td>
                       <td className="py-2 text-right text-muted-foreground">
-                        ₹{item.overriddenPrice ?? item.product.price}
+                        {item.isOutOfStock ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-destructive font-medium text-xs">
+                              Stock Out
+                            </span>
+                            {!isCompleted && (
+                              <button
+                                onClick={() => handleToggleStock(item.product.id)}
+                                className="px-2 py-0.5 text-xs bg-success/10 text-success rounded border border-success/20 hover:bg-success/20 transition-colors no-print"
+                              >
+                                [Undo]
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          `₹${item.overriddenPrice ?? item.product.price}`
+                        )}
                       </td>
                       <td className="py-2 text-right font-medium text-foreground">
-                        ₹
-                        {(item.overriddenPrice ?? item.product.price) *
-                          item.quantity}
+                        {item.isOutOfStock ? (
+                          <span className="text-destructive font-medium text-xs">Stock Out</span>
+                        ) : (
+                          `₹${(item.overriddenPrice ?? item.product.price) *
+                          item.quantity
+                          }`
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -277,12 +320,12 @@ const Billing = () => {
                 </div>
                 {editingItems.map((item) => (
                   <CartItemComponent
-                    key={item.product.id}
                     item={item}
                     onUpdateQuantity={handleUpdateQuantity}
                     onUpdatePrice={handleUpdatePrice}
                     onRemove={handleRemoveItem}
                     variant="responsive"
+                    onToggleStock={handleToggleStock}
                   />
                 ))}
                 {editingItems.length === 0 && (
@@ -341,7 +384,7 @@ const Billing = () => {
             </p>
           )}
         </div>
-      </div>
+      </div >
     );
   }
 

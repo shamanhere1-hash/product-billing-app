@@ -9,6 +9,9 @@ interface CartItemProps {
   onRemove: (productId: string) => void;
   readOnly?: boolean;
   variant?: "default" | "responsive";
+  hideDelete?: boolean;
+  onClick?: () => void;
+  onToggleStock?: (productId: string) => void;
 }
 
 export function CartItemComponent({
@@ -18,6 +21,9 @@ export function CartItemComponent({
   onRemove,
   readOnly = false,
   variant = "default",
+  hideDelete = false,
+  onClick,
+  onToggleStock,
 }: CartItemProps) {
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [editPriceValue, setEditPriceValue] = useState(
@@ -44,28 +50,47 @@ export function CartItemComponent({
   return (
     <div
       className={`cart-item animate-slide-in ${isResponsive ? "flex-wrap sm:flex-nowrap gap-y-3" : ""
+        } ${item.isOutOfStock ? "opacity-50" : ""} ${onClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""
         }`}
+      onClick={(e) => {
+        if (onClick) {
+          // Only trigger if clicking the container, not interactive elements
+          const target = e.target as HTMLElement;
+          if (!target.closest("button") && !target.closest("input")) {
+            onClick();
+          }
+        }
+      }}
     >
       <div className={`flex-1 min-w-0 ${isResponsive ? "min-w-[120px]" : ""}`}>
         <h4
           className={`font-medium text-foreground text-sm truncate ${isResponsive ? "pr-2" : ""
-            }`}
+            } ${item.isOutOfStock ? "line-through decoration-destructive" : ""}`}
         >
           {item.product.name}
         </h4>
 
         {isEditingPrice && !readOnly ? (
-          <div className={`flex items-center ${isResponsive ? "gap-2 mt-2" : "gap-1 mt-1"}`}>
+          <div
+            className={`flex items-center ${isResponsive ? "gap-2 mt-2" : "gap-1 mt-1"
+              }`}
+          >
             <input
               type="number"
-              className={`${isResponsive ? "w-24 px-2 py-1.5 text-sm" : "w-20 px-1 py-0.5 text-xs"
+              className={`${isResponsive
+                ? "w-24 px-2 py-1.5 text-sm"
+                : "w-20 px-1 py-0.5 text-xs"
                 } border rounded bg-background`}
               value={editPriceValue}
               onChange={(e) => setEditPriceValue(e.target.value)}
               autoFocus
+              onClick={(e) => e.stopPropagation()}
             />
             <button
-              onClick={handleSavePrice}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSavePrice();
+              }}
               className={`${isResponsive
                 ? "p-2 rounded-full focus:ring-2 focus:ring-success/20 ring-offset-1"
                 : "p-0.5 rounded"
@@ -75,7 +100,10 @@ export function CartItemComponent({
               <Check className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
             </button>
             <button
-              onClick={handleCancelPrice}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCancelPrice();
+              }}
               className={`${isResponsive
                 ? "p-2 rounded-full focus:ring-2 focus:ring-destructive/20 ring-offset-1"
                 : "p-0.5 rounded"
@@ -86,35 +114,69 @@ export function CartItemComponent({
             </button>
           </div>
         ) : (
-          <div className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"}`}>
-            <p className="text-xs text-muted-foreground">
-              ₹{displayPrice} × {item.quantity}
-            </p>
-            {!readOnly && onUpdatePrice && (
-              <button
-                onClick={() => {
-                  setEditPriceValue(String(displayPrice));
-                  setIsEditingPrice(true);
-                }}
-                className={`${isResponsive
-                  ? "p-1.5 -ml-1.5 rounded-full"
-                  : "p-0.5 hover:bg-muted"
-                  } text-muted-foreground hover:text-primary transition-colors`}
-                title="Edit Price"
-              >
-                <Edit2 className={isResponsive ? "w-3.5 h-3.5" : "w-3 h-3"} />
-              </button>
+          <div
+            className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"
+              }`}
+          >
+            {item.isOutOfStock ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-destructive">
+                  Stock Out
+                </span>
+                {onToggleStock && !readOnly && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleStock(item.product.id);
+                    }}
+                    className="px-2 py-0.5 text-xs bg-success/10 text-success rounded border border-success/20 hover:bg-success/20 transition-colors no-print"
+                  >
+                    [Undo]
+                  </button>
+                )}
+              </div>
+            ) : (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  ₹{displayPrice} × {item.quantity}
+                </p>
+                {!readOnly && onUpdatePrice && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditPriceValue(String(displayPrice));
+                      setIsEditingPrice(true);
+                    }}
+                    className={`${isResponsive
+                      ? "p-1.5 -ml-1.5 rounded-full"
+                      : "p-0.5 hover:bg-muted"
+                      } text-muted-foreground hover:text-primary transition-colors`}
+                    title="Edit Price"
+                  >
+                    <Edit2
+                      className={isResponsive ? "w-3.5 h-3.5" : "w-3 h-3"}
+                    />
+                  </button>
+                )}
+              </>
             )}
           </div>
         )}
       </div>
 
       {!readOnly && (
-        <div className={`flex items-center ${isResponsive ? "gap-3 ml-auto sm:ml-0" : "gap-2"}`}>
+        <div
+          className={`flex items-center ${isResponsive ? "gap-3 ml-auto sm:ml-0" : "gap-2"
+            }`}
+        >
           <button
-            onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onUpdateQuantity(item.product.id, item.quantity - 1);
+            }}
+            disabled={item.isOutOfStock}
             className={`quantity-btn quantity-btn-minus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
-              }`}
+              } ${item.isOutOfStock ? "cursor-not-allowed opacity-50" : ""}`}
             aria-label="Decrease quantity"
           >
             <Minus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
@@ -124,39 +186,52 @@ export function CartItemComponent({
             type="number"
             min="0"
             value={item.quantity}
+            disabled={item.isOutOfStock}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
               const val = parseInt(e.target.value);
               if (!isNaN(val) && val >= 0) {
                 onUpdateQuantity(item.product.id, val);
               }
             }}
-            className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"
-              } text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none`}
+            className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"} text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none ${item.isOutOfStock
+                ? "cursor-not-allowed text-muted-foreground"
+                : ""
+              }`}
             style={{ MozAppearance: "textfield" }}
             aria-label="Quantity"
           />
 
           <button
-            onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onUpdateQuantity(item.product.id, item.quantity + 1);
+            }}
+            disabled={item.isOutOfStock}
             className={`quantity-btn quantity-btn-plus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
-              }`}
+              } ${item.isOutOfStock ? "cursor-not-allowed opacity-50" : ""}`}
             aria-label="Increase quantity"
           >
             <Plus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
           </button>
 
-          <button
-            onClick={() => onRemove(item.product.id)}
-            className={`${isResponsive
-              ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
-              : "ml-2 p-1.5 rounded-full"
-              } text-destructive hover:bg-destructive/10 transition-colors no-print`}
-            title="Remove item"
-            aria-label="Remove item"
-          >
-            <Trash2 className={isResponsive ? "w-4 h-4" : "w-4 h-4"} />
-          </button>
+          {!hideDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(item.product.id);
+              }}
+              className={`${isResponsive
+                ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
+                : "ml-2 p-1.5 rounded-full"
+                } text-destructive hover:bg-destructive/10 transition-colors no-print`}
+              title="Remove item"
+              aria-label="Remove item"
+            >
+              <Trash2 className={isResponsive ? "w-4 h-4" : "w-4 h-4"} />
+            </button>
+          )}
         </div>
       )}
 

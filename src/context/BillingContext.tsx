@@ -20,6 +20,7 @@ export interface CartItem {
   product: Product;
   quantity: number;
   overriddenPrice?: number;
+  isOutOfStock?: boolean;
 }
 
 export interface Order {
@@ -108,19 +109,14 @@ export function BillingProvider({ children }: { children: ReactNode }) {
           }
         } else if (op.type === "update_order") {
           const { orderId, total, items } = op.data;
-          const { error: orderError } = await supabase
-            .from("orders")
-            .update({ total })
-            .eq("id", orderId);
-          if (!orderError) {
-            await supabase.from("order_items").delete().eq("order_id", orderId);
-            // Re-insert items (map to DB format if needed, but assuming data is prepared)
-            // The op.data.items should be pre-formatted for DB in updateOrder
-            const { error: itemsError } = await supabase
-              .from("order_items")
-              .insert(items);
-            if (!itemsError) success = true;
-          }
+
+          const { error } = await supabase.rpc("update_order_items", {
+            p_order_id: orderId,
+            p_total: total,
+            p_items: items,
+          });
+
+          if (!error) success = true;
         } else if (op.type === "update_status") {
           const { orderId, status } = op.data;
           const { error } = await supabase
@@ -217,6 +213,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
             category: "",
           },
           quantity: item.quantity,
+          isOutOfStock: item.is_out_of_stock,
         })),
     }));
 
@@ -491,6 +488,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       product_name: item.product.name,
       product_price: item.overriddenPrice ?? item.product.price,
       quantity: item.quantity,
+      is_out_of_stock: item.isOutOfStock ?? false,
     }));
 
     if (!isOnline) {
@@ -499,17 +497,13 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const { error: orderError } = await supabase
-        .from("orders")
-        .update({ total })
-        .eq("id", orderId);
-      if (orderError) throw orderError;
+      const { error } = await supabase.rpc("update_order_items", {
+        p_order_id: orderId,
+        p_total: total,
+        p_items: dbItems,
+      });
 
-      await supabase.from("order_items").delete().eq("order_id", orderId);
-      const { error: insertError } = await supabase
-        .from("order_items")
-        .insert(dbItems);
-      if (insertError) throw insertError;
+      if (error) throw error;
     } catch (e) {
       console.error("Online update failed, queuing offline:", e);
       addPendingOperation("update_order", { orderId, total, items: dbItems });
@@ -565,6 +559,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
 
   const getCartTotal = () => {
     return cart.reduce((sum, item) => {
+      if (item.isOutOfStock) return sum;
       const price = item.overriddenPrice ?? item.product.price;
       return sum + price * item.quantity;
     }, 0);
