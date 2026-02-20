@@ -26,13 +26,21 @@ const Billing = () => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
+  // Track previously selected order ID so we only reinitialise items when a
+  // DIFFERENT order is selected, not when the same order re-fetches from context.
+  const [loadedOrderId, setLoadedOrderId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (selectedOrder) {
-      setEditingItems(selectedOrder.items);
+    if (selectedOrder && selectedOrder.id !== loadedOrderId) {
+      setEditingItems(JSON.parse(JSON.stringify(selectedOrder.items)));
       setHasUnsavedChanges(false);
-      setIsEditMode(false); // Reset edit mode when selecting new order
+      setIsEditMode(false);
+      setLoadedOrderId(selectedOrder.id);
     }
-  }, [selectedOrder]);
+    if (!selectedOrder) {
+      setLoadedOrderId(null);
+    }
+  }, [selectedOrder, loadedOrderId]);
 
   const packedOrders = orders.filter((o) => o.status === "packed");
   const billedOrders = orders.filter((o) => o.status === "billed");
@@ -256,27 +264,25 @@ const Billing = () => {
                   {editingItems.map((item, index) => (
                     <tr
                       key={index}
-                      className={`border-b border-border/50 last:border-0 ${item.isOutOfStock ? "bg-muted/30" : ""
-                        }`}
+                      className={`border-b border-border/50 last:border-0 ${item.isOutOfStock ? "bg-muted/30" : ""}`}
                     >
                       <td className="py-2 text-foreground">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={
-                              item.isOutOfStock
-                                ? "line-through decoration-destructive text-muted-foreground"
-                                : ""
-                            }
-                          >
-                            {item.product.name}
-                          </span>
-                        </div>
+                        <span
+                          className={
+                            item.isOutOfStock
+                              ? "line-through decoration-destructive text-muted-foreground"
+                              : ""
+                          }
+                        >
+                          {item.product.name}
+                        </span>
                       </td>
                       <td className="py-2 text-center text-muted-foreground">
                         {item.quantity}
                       </td>
-                      <td className="py-2 text-right text-muted-foreground">
-                        {item.isOutOfStock ? (
+                      {item.isOutOfStock ? (
+                        /* Merge price + total columns for stock-out items */
+                        <td colSpan={2} className="py-2 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <span className="text-destructive font-medium text-xs">
                               Stock Out
@@ -290,19 +296,17 @@ const Billing = () => {
                               </button>
                             )}
                           </div>
-                        ) : (
-                          `₹${item.overriddenPrice ?? item.product.price}`
-                        )}
-                      </td>
-                      <td className="py-2 text-right font-medium text-foreground">
-                        {item.isOutOfStock ? (
-                          <span className="text-destructive font-medium text-xs">Stock Out</span>
-                        ) : (
-                          `₹${(item.overriddenPrice ?? item.product.price) *
-                          item.quantity
-                          }`
-                        )}
-                      </td>
+                        </td>
+                      ) : (
+                        <>
+                          <td className="py-2 text-right text-muted-foreground">
+                            ₹{item.overriddenPrice ?? item.product.price}
+                          </td>
+                          <td className="py-2 text-right font-medium text-foreground">
+                            ₹{(item.overriddenPrice ?? item.product.price) * item.quantity}
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>

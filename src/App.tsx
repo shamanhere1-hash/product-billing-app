@@ -14,6 +14,7 @@ import Reset from "./pages/Reset";
 import ProductManagement from "./pages/ProductManagement";
 import History from "./pages/History";
 import Summary from "./pages/Summary";
+import Profit from "./pages/Profit";
 import OwnerSettings from "./pages/OwnerSettings";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/products" element={<ProductManagement />} />
               <Route path="/history" element={<History />} />
               <Route path="/summary" element={<Summary />} />
+              <Route path="/profit" element={<Profit />} />
               <Route path="/owner-settings" element={<OwnerSettings />} />
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />

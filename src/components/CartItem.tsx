@@ -50,7 +50,7 @@ export function CartItemComponent({
   return (
     <div
       className={`cart-item animate-slide-in ${isResponsive ? "flex-wrap sm:flex-nowrap gap-y-3" : ""
-        } ${item.isOutOfStock ? "opacity-50" : ""} ${onClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""
+        } ${onClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""
         }`}
       onClick={(e) => {
         if (onClick) {
@@ -118,24 +118,7 @@ export function CartItemComponent({
             className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"
               }`}
           >
-            {item.isOutOfStock ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-destructive">
-                  Stock Out
-                </span>
-                {onToggleStock && !readOnly && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleStock(item.product.id);
-                    }}
-                    className="px-2 py-0.5 text-xs bg-success/10 text-success rounded border border-success/20 hover:bg-success/20 transition-colors no-print"
-                  >
-                    [Undo]
-                  </button>
-                )}
-              </div>
-            ) : (
+            {!item.isOutOfStock && (
               <>
                 <p className="text-xs text-muted-foreground">
                   ₹{displayPrice} × {item.quantity}
@@ -169,68 +152,84 @@ export function CartItemComponent({
           className={`flex items-center ${isResponsive ? "gap-3 ml-auto sm:ml-0" : "gap-2"
             }`}
         >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdateQuantity(item.product.id, item.quantity - 1);
-            }}
-            disabled={item.isOutOfStock}
-            className={`quantity-btn quantity-btn-minus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
-              } ${item.isOutOfStock ? "cursor-not-allowed opacity-50" : ""}`}
-            aria-label="Decrease quantity"
-          >
-            <Minus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
-          </button>
+          {item.isOutOfStock ? (
+            /* Out-of-stock: show quantity read-only + Stock Out + Undo */
+            <div className="flex items-center gap-2">
+              <span className={`text-center font-semibold text-sm text-muted-foreground ${isResponsive ? "w-14" : "w-12"}`}>
+                {item.quantity}
+              </span>
+              <span className="text-xs font-bold text-destructive whitespace-nowrap">
+                Stock Out
+              </span>
+              {onToggleStock && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleStock(item.product.id);
+                  }}
+                  className="px-2 py-0.5 text-xs bg-success/10 text-success rounded border border-success/20 hover:bg-success/20 transition-colors no-print whitespace-nowrap"
+                >
+                  [Undo]
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateQuantity(item.product.id, item.quantity - 1);
+                }}
+                className={`quantity-btn quantity-btn-minus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"}`}
+                aria-label="Decrease quantity"
+              >
+                <Minus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
+              </button>
 
-          <input
-            type="number"
-            min="0"
-            value={item.quantity}
-            disabled={item.isOutOfStock}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              const val = parseInt(e.target.value);
-              if (!isNaN(val) && val >= 0) {
-                onUpdateQuantity(item.product.id, val);
-              }
-            }}
-            className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"} text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none ${item.isOutOfStock
-                ? "cursor-not-allowed text-muted-foreground"
-                : ""
-              }`}
-            style={{ MozAppearance: "textfield" }}
-            aria-label="Quantity"
-          />
+              <input
+                type="number"
+                min="0"
+                value={item.quantity}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val) && val >= 0) {
+                    onUpdateQuantity(item.product.id, val);
+                  }
+                }}
+                className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"} text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"} rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none`}
+                style={{ MozAppearance: "textfield" }}
+                aria-label="Quantity"
+              />
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onUpdateQuantity(item.product.id, item.quantity + 1);
-            }}
-            disabled={item.isOutOfStock}
-            className={`quantity-btn quantity-btn-plus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"
-              } ${item.isOutOfStock ? "cursor-not-allowed opacity-50" : ""}`}
-            aria-label="Increase quantity"
-          >
-            <Plus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
-          </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateQuantity(item.product.id, item.quantity + 1);
+                }}
+                className={`quantity-btn quantity-btn-plus no-print ${isResponsive ? "w-11 h-11" : "w-8 h-8"}`}
+                aria-label="Increase quantity"
+              >
+                <Plus className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
+              </button>
 
-          {!hideDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove(item.product.id);
-              }}
-              className={`${isResponsive
-                ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
-                : "ml-2 p-1.5 rounded-full"
-                } text-destructive hover:bg-destructive/10 transition-colors no-print`}
-              title="Remove item"
-              aria-label="Remove item"
-            >
-              <Trash2 className={isResponsive ? "w-4 h-4" : "w-4 h-4"} />
-            </button>
+              {!hideDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(item.product.id);
+                  }}
+                  className={`${isResponsive
+                    ? "ml-1 w-11 h-11 rounded-full flex items-center justify-center"
+                    : "ml-2 p-1.5 rounded-full"
+                    } text-destructive hover:bg-destructive/10 transition-colors no-print`}
+                  title="Remove item"
+                  aria-label="Remove item"
+                >
+                  <Trash2 className={isResponsive ? "w-4 h-4" : "w-4 h-4"} />
+                </button>
+              )}
+            </>
           )}
         </div>
       )}
@@ -240,9 +239,13 @@ export function CartItemComponent({
           <span className="text-sm text-muted-foreground">
             ×{item.quantity}
           </span>
-          <span className="font-semibold text-foreground">
-            ₹{displayPrice * item.quantity}
-          </span>
+          {item.isOutOfStock ? (
+            <span className="text-xs font-bold text-destructive">Stock Out</span>
+          ) : (
+            <span className="font-semibold text-foreground">
+              ₹{displayPrice * item.quantity}
+            </span>
+          )}
         </div>
       )}
     </div>

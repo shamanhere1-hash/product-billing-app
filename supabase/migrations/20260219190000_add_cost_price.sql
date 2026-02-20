@@ -1,0 +1,2 @@
+
+ALTER TABLE "public"."products" ADD COLUMN "cost_price" numeric NOT NULL DEFAULT 0;

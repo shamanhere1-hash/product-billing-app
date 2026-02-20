@@ -13,6 +13,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  costPrice: number;
   category: string;
 }
 
@@ -157,10 +158,11 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const mappedProducts = data.map((p) => ({
+    const mappedProducts = data.map((p: any) => ({
       id: p.id,
       name: p.name,
       price: Number(p.price),
+      costPrice: Number(p.cost_price ?? 0),
       category: p.category,
     }));
 
@@ -210,6 +212,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
             id: item.product_id,
             name: item.product_name,
             price: Number(item.product_price),
+            costPrice: 0,
             category: "",
           },
           quantity: item.quantity,
@@ -438,6 +441,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.from("products").insert({
       name: product.name,
       price: product.price,
+      cost_price: product.costPrice ?? 0,
       category: product.category,
     });
 
@@ -452,6 +456,7 @@ export function BillingProvider({ children }: { children: ReactNode }) {
       .update({
         name: product.name,
         price: product.price,
+        cost_price: product.costPrice ?? 0,
         category: product.category,
       })
       .eq("id", id);

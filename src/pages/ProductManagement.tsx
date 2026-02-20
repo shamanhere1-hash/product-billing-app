@@ -67,6 +67,7 @@ const ProductManagement = () => {
       await updateProduct(editingProduct.id, {
         name: formData.name.trim(),
         price,
+        costPrice: editingProduct.costPrice ?? 0,
         category: formData.category.trim(),
       });
       toast.success("Product updated successfully");
@@ -74,6 +75,7 @@ const ProductManagement = () => {
       await addProduct({
         name: formData.name.trim(),
         price,
+        costPrice: 0,
         category: formData.category.trim(),
       });
       toast.success("Product added successfully");
@@ -122,11 +124,10 @@ const ProductManagement = () => {
         <div className="flex gap-2 overflow-x-auto pb-2">
           <button
             onClick={() => setSelectedCategory(null)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-              !selectedCategory
+            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!selectedCategory
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
+              }`}
           >
             All
           </button>
@@ -134,11 +135,10 @@ const ProductManagement = () => {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                selectedCategory === category
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-              }`}
+                }`}
             >
               {category}
             </button>

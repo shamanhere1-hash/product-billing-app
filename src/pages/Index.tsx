@@ -10,6 +10,7 @@ import {
   BarChart3,
   Shield,
   ShieldAlert,
+  TrendingUp,
 } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,17 +23,23 @@ const Index = () => {
     isOwnerAuthenticated,
     logout,
     verifyPin,
+    verifyHistoryPin,
     checkAdminStatus,
     setupAdmin,
   } = useAuth();
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showAdminSetup, setShowAdminSetup] = useState(false);
+  const [showProfitPin, setShowProfitPin] = useState(false);
 
   const pendingOrders = orders.filter((o) => o.status === "pending").length;
   const packedOrders = orders.filter((o) => o.status === "packed").length;
 
   const handleAdminLogin = async (pin: string) => {
     return await verifyPin(pin, "admin");
+  };
+
+  const handleProfitPin = async (pin: string) => {
+    return await verifyHistoryPin(pin);
   };
 
   return (
@@ -132,6 +139,15 @@ const Index = () => {
             <span className="text-base md:text-xl">Summary</span>
           </button>
 
+          {/* Profit */}
+          <button
+            onClick={() => setShowProfitPin(true)}
+            className="nav-button nav-button-secondary aspect-square md:aspect-auto md:py-12"
+          >
+            <TrendingUp className="w-10 h-10 md:w-12 md:h-12" />
+            <span className="text-base md:text-xl">Profit</span>
+          </button>
+
           {/* Reset All Bills */}
           <button
             onClick={() => navigate("/reset")}
@@ -178,6 +194,18 @@ const Index = () => {
         onSuccess={() => {
           setShowAdminLogin(false);
           navigate("/admin-dashboard");
+        }}
+      />
+
+      <PinDialog
+        open={showProfitPin}
+        onOpenChange={setShowProfitPin}
+        title="Profit Access"
+        description="Enter PIN to view profit data"
+        onSubmit={handleProfitPin}
+        onSuccess={() => {
+          setShowProfitPin(false);
+          navigate("/profit");
         }}
       />
     </div>
