@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Key, Lock, ShieldAlert, Eye, EyeOff, Loader2 } from "lucide-react";
 
-type PinType = "main_app" | "history_summary" | "admin";
+type PinType = "main_app" | "history_summary" | "admin" | "cost_settings_pin";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -55,7 +55,9 @@ export default function AdminDashboard() {
       case "main_app":
         return "Main App PIN";
       case "history_summary":
-        return "History/Summary PIN";
+        return "Reports Page PIN";
+      case "cost_settings_pin":
+        return "Cost Price Settings PIN";
       case "admin":
         return "Admin Code";
       default:
@@ -113,14 +115,14 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* Change History/Summary PIN */}
+        {/* Change Reports Page PIN */}
         <div className="bg-card rounded-xl border border-border p-6">
           <div className="flex items-center gap-3 mb-4">
             <Lock className="w-5 h-5 text-accent" />
-            <h3 className="font-semibold">History/Summary PIN</h3>
+            <h3 className="font-semibold">Reports Page PIN</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            This PIN is required to view History and Summary pages.
+            This PIN is required to access the Reports page.
           </p>
 
           {changingPin === "history_summary" ? (
@@ -145,7 +147,44 @@ export default function AdminDashboard() {
               variant="outline"
               className="w-full"
             >
-              Change History/Summary PIN
+              Change Reports Page PIN
+            </Button>
+          )}
+        </div>
+
+        {/* Change Cost Price Settings PIN */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Lock className="w-5 h-5 text-warning" />
+            <h3 className="font-semibold">Cost Price Settings PIN</h3>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            This PIN is required to access cost price settings inside the Reports page.
+          </p>
+
+          {changingPin === "cost_settings_pin" ? (
+            <PinChangeForm
+              newPin={newPin}
+              setNewPin={setNewPin}
+              confirmPin={confirmPin}
+              setConfirmPin={setConfirmPin}
+              showNewPin={showNewPin}
+              setShowNewPin={setShowNewPin}
+              loading={loading}
+              onCancel={() => {
+                setChangingPin(null);
+                setNewPin("");
+                setConfirmPin("");
+              }}
+              onSave={() => handleChangePin("cost_settings_pin")}
+            />
+          ) : (
+            <Button
+              onClick={() => setChangingPin("cost_settings_pin")}
+              variant="outline"
+              className="w-full"
+            >
+              Change Cost Price Settings PIN
             </Button>
           )}
         </div>

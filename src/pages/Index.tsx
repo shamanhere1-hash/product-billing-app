@@ -10,7 +10,6 @@ import {
   BarChart3,
   Shield,
   ShieldAlert,
-  TrendingUp,
 } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,7 +28,7 @@ const Index = () => {
   } = useAuth();
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showAdminSetup, setShowAdminSetup] = useState(false);
-  const [showProfitPin, setShowProfitPin] = useState(false);
+  const [showReportsPin, setShowReportsPin] = useState(false);
 
   const pendingOrders = orders.filter((o) => o.status === "pending").length;
   const packedOrders = orders.filter((o) => o.status === "packed").length;
@@ -38,7 +37,7 @@ const Index = () => {
     return await verifyPin(pin, "admin");
   };
 
-  const handleProfitPin = async (pin: string) => {
+  const handleReportsPin = async (pin: string) => {
     return await verifyHistoryPin(pin);
   };
 
@@ -130,22 +129,13 @@ const Index = () => {
             <span className="text-base md:text-xl">History</span>
           </button>
 
-          {/* Summary */}
+          {/* Reports */}
           <button
-            onClick={() => navigate("/summary")}
+            onClick={() => setShowReportsPin(true)}
             className="nav-button nav-button-accent aspect-square md:aspect-auto md:py-12"
           >
             <BarChart3 className="w-10 h-10 md:w-12 md:h-12" />
-            <span className="text-base md:text-xl">Summary</span>
-          </button>
-
-          {/* Profit */}
-          <button
-            onClick={() => setShowProfitPin(true)}
-            className="nav-button nav-button-secondary aspect-square md:aspect-auto md:py-12"
-          >
-            <TrendingUp className="w-10 h-10 md:w-12 md:h-12" />
-            <span className="text-base md:text-xl">Profit</span>
+            <span className="text-base md:text-xl">Reports</span>
           </button>
 
           {/* Reset All Bills */}
@@ -198,14 +188,14 @@ const Index = () => {
       />
 
       <PinDialog
-        open={showProfitPin}
-        onOpenChange={setShowProfitPin}
-        title="Profit Access"
-        description="Enter PIN to view profit data"
-        onSubmit={handleProfitPin}
+        open={showReportsPin}
+        onOpenChange={setShowReportsPin}
+        title="Reports Access"
+        description="Enter PIN to view reports"
+        onSubmit={handleReportsPin}
         onSuccess={() => {
-          setShowProfitPin(false);
-          navigate("/profit");
+          setShowReportsPin(false);
+          navigate("/reports");
         }}
       />
     </div>

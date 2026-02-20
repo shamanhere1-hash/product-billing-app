@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-type SessionType = "main_app" | "history_summary" | "owner" | "admin";
+type SessionType = "main_app" | "history_summary" | "owner" | "admin" | "cost_settings_pin";
 
 interface Session {
   token: string;
@@ -192,6 +192,24 @@ export function useAuth() {
     }
   };
 
+  const verifyCostSettingsPin = async (
+    pin: string,
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.functions.invoke("verify-pin", {
+        body: { pin, pinType: "cost_settings_pin" },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: data?.success === true, error: data?.error };
+    } catch (error: any) {
+      return { success: false, error: error.message || "Verification failed" };
+    }
+  };
+
   const changePin = async (
     pinType: SessionType,
     newPin: string,
@@ -294,6 +312,7 @@ export function useAuth() {
     loading,
     verifyPin,
     verifyHistoryPin,
+    verifyCostSettingsPin,
     changePin,
     logout,
     logoutOwner,
