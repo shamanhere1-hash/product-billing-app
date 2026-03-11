@@ -27,24 +27,6 @@ export function CartItemComponent({
   onToggleStock,
   isPriceEditMode = false,
 }: CartItemProps) {
-  const [isEditingPrice, setIsEditingPrice] = useState(false);
-  const [editPriceValue, setEditPriceValue] = useState(
-    String(item.overriddenPrice ?? item.product.price),
-  );
-
-  const handleSavePrice = () => {
-    const newPrice = parseFloat(editPriceValue);
-    if (!isNaN(newPrice) && newPrice >= 0 && onUpdatePrice) {
-      onUpdatePrice(item.product.id, newPrice);
-    }
-    setIsEditingPrice(false);
-  };
-
-  const handleCancelPrice = () => {
-    setEditPriceValue(String(item.overriddenPrice ?? item.product.price));
-    setIsEditingPrice(false);
-  };
-
   const displayPrice = item.overriddenPrice ?? item.product.price;
 
   const isResponsive = variant === "responsive";
@@ -73,81 +55,18 @@ export function CartItemComponent({
           {item.product.name}
         </h4>
 
-        {isEditingPrice && !readOnly && !isPriceEditMode ? (
-          <div
-            className={`flex items-center ${isResponsive ? "gap-2 mt-2" : "gap-1 mt-1"
-              }`}
-          >
-            <input
-              type="number"
-              className={`${isResponsive
-                ? "w-24 px-2 py-1.5 text-sm"
-                : "w-20 px-1 py-0.5 text-xs"
-                } border rounded bg-background`}
-              value={editPriceValue}
-              onChange={(e) => setEditPriceValue(e.target.value)}
-              autoFocus
-              onClick={(e) => e.stopPropagation()}
-            />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSavePrice();
-              }}
-              className={`${isResponsive
-                ? "p-2 rounded-full focus:ring-2 focus:ring-success/20 ring-offset-1"
-                : "p-0.5 rounded"
-                } text-success hover:bg-success/10 transition-all`}
-              aria-label="Save price"
-            >
-              <Check className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleCancelPrice();
-              }}
-              className={`${isResponsive
-                ? "p-2 rounded-full focus:ring-2 focus:ring-destructive/20 ring-offset-1"
-                : "p-0.5 rounded"
-                } text-destructive hover:bg-destructive/10 transition-all`}
-              aria-label="Cancel price edit"
-            >
-              <X className={isResponsive ? "w-4 h-4" : "w-3 h-3"} />
-            </button>
-          </div>
-        ) : (
-          <div
-            className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"
-              }`}
-          >
-            {!item.isOutOfStock && !isPriceEditMode && (
-              <>
-                <p className="text-xs text-muted-foreground mr-1">
-                  ₹{displayPrice} &times; {item.quantity}
-                </p>
-                {!readOnly && onUpdatePrice && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditPriceValue(String(displayPrice));
-                      setIsEditingPrice(true);
-                    }}
-                    className={`${isResponsive
-                      ? "p-1.5 -ml-1.5 rounded-full"
-                      : "p-0.5 hover:bg-muted"
-                      } text-muted-foreground hover:text-primary transition-colors`}
-                    title="Edit Price"
-                  >
-                    <Edit2
-                      className={isResponsive ? "w-3.5 h-3.5" : "w-3 h-3"}
-                    />
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        )}
+        <div
+          className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"
+            }`}
+        >
+          {!item.isOutOfStock && !isPriceEditMode && (
+            <>
+              <p className="text-xs text-muted-foreground mr-1">
+                ₹{displayPrice} &times; {item.quantity}
+              </p>
+            </>
+          )}
+        </div>
       </div>
 
       {!readOnly && (
