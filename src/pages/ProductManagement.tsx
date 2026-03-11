@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Plus, Pencil, Trash2, Search, X, Check } from "lucide-react";
 import { useBilling, Product } from "@/context/BillingContext";
 import { BackButton } from "@/components/BackButton";
@@ -13,6 +13,7 @@ import {
 const ProductManagement = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useBilling();
   const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -25,9 +26,9 @@ const ProductManagement = () => {
   const categories = [...new Set(products.map((p) => p.category))];
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const cleaned = searchTerm.trim().replace(/\s+/g, " ").toLowerCase();
+    const target = product.name.trim().toLowerCase();
+    const matchesSearch = target.includes(cleaned);
     const matchesCategory =
       !selectedCategory || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -105,12 +106,24 @@ const ProductManagement = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-card border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+              className="w-full pl-10 pr-10 py-3 rounded-xl bg-card border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
             />
+            {searchTerm && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  searchInputRef.current?.focus();
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
           </div>
           <button
             onClick={openAddDialog}
@@ -125,8 +138,8 @@ const ProductManagement = () => {
           <button
             onClick={() => setSelectedCategory(null)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${!selectedCategory
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               }`}
           >
             All
@@ -136,8 +149,8 @@ const ProductManagement = () => {
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                ? "bg-primary text-primary-foreground"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
                 }`}
             >
               {category}

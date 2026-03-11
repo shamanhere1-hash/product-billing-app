@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useBilling, Order, CartItem, Product } from "@/context/BillingContext";
 import { BackButton } from "@/components/BackButton";
 import { OrderCard } from "@/components/OrderCard";
-import { Package, CheckCircle2, Trash2, Edit2, Save } from "lucide-react";
+import { Package, CheckCircle2, Trash2, Edit2, Save, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -29,8 +29,21 @@ const PackCheck = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activePopoverId, setActivePopoverId] = useState<string | null>(null);
 
-  const pendingOrders = orders.filter((o) => o.status === "pending");
-  const packedOrders = orders.filter((o) => o.status === "packed");
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const filterOrders = (orderList: Order[]) => {
+    if (!searchTerm.trim()) return orderList;
+    const cleaned = searchTerm.trim().replace(/\s+/g, " ").toLowerCase();
+    return orderList.filter((order) => {
+      const nameTarget = (order.customerName || "").trim().toLowerCase();
+      const numTarget = (order.orderNumber || "").trim().toLowerCase();
+      return nameTarget.includes(cleaned) || numTarget.includes(cleaned);
+    });
+  };
+
+  const pendingOrders = filterOrders(orders.filter((o) => o.status === "pending"));
+  const packedOrders = filterOrders(orders.filter((o) => o.status === "packed"));
 
   const handleMarkPacked = async (orderId: string) => {
     await updateOrderStatus(orderId, "packed");
@@ -165,6 +178,30 @@ const PackCheck = () => {
       <div className="page-header">
         <BackButton />
         <h1 className="page-title">Pack & Check</h1>
+      </div>
+
+      {/* Search Bar */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <input
+          ref={searchInputRef}
+          type="text"
+          placeholder="Search by customer name or order number..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-10 py-3 rounded-xl bg-card border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+        />
+        {searchTerm && (
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              searchInputRef.current?.focus();
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

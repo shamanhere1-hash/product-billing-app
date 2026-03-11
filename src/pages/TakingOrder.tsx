@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, Check, User, ChevronUp, ChevronDown } from "lucide-react";
+import { Search, ShoppingBag, Check, User, ChevronUp, ChevronDown, X } from "lucide-react";
 import { useBilling } from "@/context/BillingContext";
 import { ProductCard } from "@/components/ProductCard";
 import { CartItemComponent } from "@/components/CartItem";
@@ -25,6 +25,7 @@ const TakingOrder = () => {
   } = useBilling();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("");
   const [isCartExpanded, setIsCartExpanded] = useState(false);
@@ -32,9 +33,9 @@ const TakingOrder = () => {
   const categories = [...new Set(products.map((p) => p.category))];
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const cleaned = searchTerm.trim().replace(/\s+/g, " ").toLowerCase();
+    const target = product.name.trim().toLowerCase();
+    const matchesSearch = target.includes(cleaned);
 
     let matchesCategory = true;
     if (selectedCategory === "Selected") {
@@ -129,12 +130,24 @@ const TakingOrder = () => {
         <div className="relative mb-3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-secondary/50 border border-input/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+            className="w-full pl-9 pr-10 py-2.5 rounded-lg bg-secondary/50 border border-input/50 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
           />
+          {searchTerm && (
+            <button
+              onClick={() => {
+                setSearchTerm("");
+                searchInputRef.current?.focus();
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Categories */}

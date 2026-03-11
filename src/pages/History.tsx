@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { BackButton } from "@/components/BackButton";
 import { PinDialog } from "@/components/PinDialog";
@@ -11,6 +11,8 @@ import {
   Clock,
   Loader2,
   ChevronDown,
+  Search,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -31,9 +33,12 @@ export default function History() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedBill, setSelectedBill] = useState<Order | null>(null);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   // Grouping Logic
   const getGroupedOrders = () => {
-    const billedOrders = orders
+    let billedOrders = orders
       .filter(
         (o) =>
           o.status === "billed" ||
@@ -45,6 +50,15 @@ export default function History() {
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
+
+    if (searchTerm.trim()) {
+      const cleaned = searchTerm.trim().replace(/\s+/g, " ").toLowerCase();
+      billedOrders = billedOrders.filter((order) => {
+        const nameTarget = (order.customerName || "").trim().toLowerCase();
+        const numTarget = (order.orderNumber || "").trim().toLowerCase();
+        return nameTarget.includes(cleaned) || numTarget.includes(cleaned);
+      });
+    }
 
     const groups: {
       month: string;
@@ -116,6 +130,30 @@ export default function History() {
         </div>
       ) : (
         <div className="max-w-3xl mx-auto space-y-8">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search by customer name or order number..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-3 rounded-xl bg-card border border-input focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  searchInputRef.current?.focus();
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
           {groupedOrders.length === 0 ? (
             <div className="text-center text-muted-foreground py-10">
               No completed bills found.
