@@ -70,8 +70,8 @@ const TakingOrder = () => {
   };
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(productId);
+    if (quantity < 0) {
+      return;
     } else {
       updateQuantity(productId, quantity);
     }

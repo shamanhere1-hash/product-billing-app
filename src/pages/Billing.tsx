@@ -12,8 +12,10 @@ import {
   AlertCircle,
   Search,
   X,
+  Pencil,
+  Tag,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { toast } from "sonner";
 import { CartItemComponent } from "@/components/CartItem";
 import { ProductSelector } from "@/components/ProductSelector";
@@ -26,7 +28,7 @@ const Billing = () => {
   // Local editing state
   const [editingItems, setEditingItems] = useState<CartItem[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [editMode, setEditMode] = useState<'none' | 'items' | 'prices'>('none');
 
   // Track previously selected order ID so we only reinitialise items when a
   // DIFFERENT order is selected, not when the same order re-fetches from context.
@@ -36,7 +38,7 @@ const Billing = () => {
     if (selectedOrder && selectedOrder.id !== loadedOrderId) {
       setEditingItems(JSON.parse(JSON.stringify(selectedOrder.items)));
       setHasUnsavedChanges(false);
-      setIsEditMode(false);
+      setEditMode('none');
       setLoadedOrderId(selectedOrder.id);
     }
     if (!selectedOrder) {
@@ -58,11 +60,11 @@ const Billing = () => {
   };
 
   const packedOrders = filterOrders(orders.filter((o) => o.status === "packed"));
-  const billedOrders = filterOrders(orders.filter((o) => o.status === "billed"));
+  const billedOrders = filterOrders(orders.filter((o) => o.status === "billed" && isToday(new Date(o.createdAt))));
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      handleRemoveItem(productId);
+    if (quantity < 0) {
+      return;
     } else {
       setEditingItems((prev) =>
         prev.map((item) =>
@@ -158,7 +160,7 @@ const Billing = () => {
     if (success) {
       toast.success("Order updated successfully");
       setHasUnsavedChanges(false);
-      setIsEditMode(false); // Exit edit mode on save
+      setEditMode('none'); // Exit edit mode on save
       // Update selectedOrder locally to reflect saved state immediately if needed,
       // but Context should trigger re-render of `orders` list.
       // We'll trust the order selector to refresh or we can force it.
@@ -175,7 +177,13 @@ const Billing = () => {
       toast.error("Please save changes before printing");
       return;
     }
+    const safeName = (selectedOrder.customerName || "Guest").trim().replace(/\s+/g, '_') || 'Bill';
+    const originalTitle = document.title;
+    document.title = safeName;
     window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
   const handleFinalize = async () => {
@@ -214,16 +222,30 @@ const Billing = () => {
             </h1>
             {!isCompleted && (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Edit Mode
-                </span>
+                {editMode !== 'none' && (
+                  <button
+                    onClick={() => {
+                      if (hasUnsavedChanges) handleSaveChanges();
+                      else setEditMode('none');
+                    }}
+                    className="px-4 py-1.5 text-sm font-medium rounded-full bg-primary text-primary-foreground hover:bg-primary/90 transition-colors mr-2"
+                  >
+                    Done
+                  </button>
+                )}
                 <button
-                  onClick={() => setIsEditMode(!isEditMode)}
-                  className={`w-12 h-6 rounded-full p-1 transition-colors ${isEditMode ? "bg-primary" : "bg-muted"}`}
+                  onClick={() => setEditMode(editMode === 'items' ? 'none' : 'items')}
+                  className={`p-2 rounded-full transition-colors ${editMode === 'items' ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                  title="Edit Items"
                 >
-                  <div
-                    className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isEditMode ? "translate-x-6" : "translate-x-0"}`}
-                  />
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setEditMode(editMode === 'prices' ? 'none' : 'prices')}
+                  className={`p-2 rounded-full transition-colors ${editMode === 'prices' ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                  title="Edit Prices"
+                >
+                  <Tag className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -264,7 +286,7 @@ const Billing = () => {
           <div className="border-t border-dashed border-border pt-4 mb-4">
             {/* If completed OR NOT in edit mode, show static table. If pending/packed AND in edit mode, show Editable List, but ALWAYS show table when printing */}
             <div
-              className={`${isCompleted || !isEditMode ? "block" : "hidden print:block"}`}
+              className={`${isCompleted || editMode === 'none' ? "block" : "hidden print:block"}`}
             >
               <table className="w-full text-sm">
                 <thead>
@@ -329,22 +351,32 @@ const Billing = () => {
             </div>
 
             {/* Editable List - Hidden when printing */}
-            {!isCompleted && isEditMode && (
+            {!isCompleted && editMode !== 'none' && (
               <div className="space-y-2 print:hidden">
-                <div className="mb-2">
-                  <ProductSelector
-                    products={products}
-                    onSelect={handleAddProduct}
-                  />
-                </div>
-                {editingItems.map((item) => (
+                {editMode === 'items' && (
+                  <div className="mb-2">
+                    <ProductSelector
+                      products={products}
+                      onSelect={handleAddProduct}
+                    />
+                  </div>
+                )}
+                {editMode === 'prices' && (
+                  <p className="text-sm text-amber-600 font-medium pb-1.5 pt-1 text-center">
+                    Price changes apply to this bill only
+                  </p>
+                )}
+                {editingItems.map((item, index) => (
                   <CartItemComponent
+                    key={`${item.product.id}-${index}`}
                     item={item}
                     onUpdateQuantity={handleUpdateQuantity}
                     onUpdatePrice={handleUpdatePrice}
                     onRemove={handleRemoveItem}
                     variant="responsive"
                     onToggleStock={handleToggleStock}
+                    isPriceEditMode={editMode === 'prices'}
+                    hideDelete={editMode === 'prices'}
                   />
                 ))}
                 {editingItems.length === 0 && (

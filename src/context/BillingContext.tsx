@@ -290,9 +290,8 @@ export function BillingProvider({ children }: { children: ReactNode }) {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
+    if (quantity < 0) {
+      quantity = 0;
     }
     setCart((prev) =>
       prev.map((item) =>

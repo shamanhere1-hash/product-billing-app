@@ -65,7 +65,7 @@ export function CartDrawer({
                                 </div>
                             ) : (
                                 cart.map((item) => (
-                                    <div key={item.product.id} className="grid grid-cols-12 gap-2 items-center text-sm py-2 border-b border-border/50 last:border-none">
+                                    <div key={item.product.id} className={`grid grid-cols-12 gap-2 items-center text-sm py-2 border-b border-border/50 last:border-none ${item.quantity === 0 ? "grayscale opacity-60" : ""}`}>
                                         {/* Product Name */}
                                         <div className="col-span-5 font-medium truncate pr-2">
                                             {item.product.name}
@@ -75,11 +75,12 @@ export function CartDrawer({
                                         <div className="col-span-3 flex items-center justify-center gap-1">
                                             <button
                                                 onClick={() => onUpdateQuantity(item.product.id, item.quantity - 1)}
-                                                className="w-6 h-6 flex items-center justify-center rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                                                className="w-6 h-6 flex items-center justify-center rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors disabled:opacity-50"
+                                                disabled={item.quantity <= 0}
                                             >
                                                 <Minus className="w-3 h-3" />
                                             </button>
-                                            <span className="w-6 text-center font-medium">{item.quantity}</span>
+                                            <span className={`w-6 text-center font-medium ${item.quantity === 0 ? "text-destructive" : ""}`}>{item.quantity}</span>
                                             <button
                                                 onClick={() => onUpdateQuantity(item.product.id, item.quantity + 1)}
                                                 className="w-6 h-6 flex items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors"

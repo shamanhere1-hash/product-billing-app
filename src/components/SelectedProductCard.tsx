@@ -16,7 +16,7 @@ export function SelectedProductCard({
     const { product, quantity } = cartItem;
 
     return (
-        <div className="product-card animate-fade-in group flex flex-col h-full bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-all">
+        <div className={`product-card animate-fade-in group flex flex-col h-full bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md transition-all ${quantity === 0 ? "grayscale opacity-60" : ""}`}>
             <div className="flex-1">
                 <h3 className="font-medium text-foreground text-sm md:text-base line-clamp-2 mb-1">
                     {product.name}
@@ -32,7 +32,7 @@ export function SelectedProductCard({
                     <button
                         onClick={() => onUpdateQuantity(product.id, quantity - 1)}
                         className="p-1.5 rounded-md hover:bg-background text-foreground transition-colors disabled:opacity-50"
-                        disabled={quantity <= 1}
+                        disabled={quantity <= 0}
                     >
                         <Minus className="w-3.5 h-3.5" />
                     </button>
@@ -47,7 +47,7 @@ export function SelectedProductCard({
                                 onUpdateQuantity(product.id, val);
                             }
                         }}
-                        className="w-8 text-center font-semibold text-sm bg-transparent border-none focus:outline-none p-0 appearance-none"
+                        className={`w-8 text-center font-semibold text-sm bg-transparent border-none focus:outline-none p-0 appearance-none ${quantity === 0 ? "text-destructive" : ""}`}
                     />
 
                     <button

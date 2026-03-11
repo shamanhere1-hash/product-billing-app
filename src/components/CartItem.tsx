@@ -12,6 +12,7 @@ interface CartItemProps {
   hideDelete?: boolean;
   onClick?: () => void;
   onToggleStock?: (productId: string) => void;
+  isPriceEditMode?: boolean;
 }
 
 export function CartItemComponent({
@@ -24,6 +25,7 @@ export function CartItemComponent({
   hideDelete = false,
   onClick,
   onToggleStock,
+  isPriceEditMode = false,
 }: CartItemProps) {
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [editPriceValue, setEditPriceValue] = useState(
@@ -51,6 +53,7 @@ export function CartItemComponent({
     <div
       className={`cart-item animate-slide-in ${isResponsive ? "flex-wrap sm:flex-nowrap gap-y-3" : ""
         } ${onClick ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""
+        } ${item.quantity === 0 && !item.isOutOfStock ? "grayscale opacity-50" : ""
         }`}
       onClick={(e) => {
         if (onClick) {
@@ -64,13 +67,13 @@ export function CartItemComponent({
     >
       <div className={`flex-1 min-w-0 ${isResponsive ? "min-w-[120px]" : ""}`}>
         <h4
-          className={`font-medium text-foreground text-sm truncate ${isResponsive ? "pr-2" : ""
-            } ${item.isOutOfStock ? "line-through decoration-destructive" : ""}`}
+          className={`font-medium text-sm truncate ${isResponsive ? "pr-2" : ""
+            } ${item.isOutOfStock ? "line-through decoration-destructive text-muted-foreground" : (item.quantity === 0 ? "text-destructive" : "text-foreground")}`}
         >
           {item.product.name}
         </h4>
 
-        {isEditingPrice && !readOnly ? (
+        {isEditingPrice && !readOnly && !isPriceEditMode ? (
           <div
             className={`flex items-center ${isResponsive ? "gap-2 mt-2" : "gap-1 mt-1"
               }`}
@@ -118,10 +121,10 @@ export function CartItemComponent({
             className={`flex items-center gap-2 ${isResponsive ? "mt-1" : "mt-0.5"
               }`}
           >
-            {!item.isOutOfStock && (
+            {!item.isOutOfStock && !isPriceEditMode && (
               <>
-                <p className="text-xs text-muted-foreground">
-                  ₹{displayPrice} × {item.quantity}
+                <p className="text-xs text-muted-foreground mr-1">
+                  ₹{displayPrice} &times; {item.quantity}
                 </p>
                 {!readOnly && onUpdatePrice && (
                   <button
@@ -173,6 +176,26 @@ export function CartItemComponent({
                 </button>
               )}
             </div>
+          ) : isPriceEditMode ? (
+            <div className="flex items-center gap-2 w-full justify-end">
+              <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">× {item.quantity}</span>
+              <div className="relative">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground text-sm flex items-center justify-center">₹</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={item.overriddenPrice ?? item.product.price}
+                  onChange={(e) => {
+                    const price = parseFloat(e.target.value);
+                    if (!isNaN(price) && price >= 0 && onUpdatePrice) {
+                      onUpdatePrice(item.product.id, price);
+                    }
+                  }}
+                  className="w-24 pl-6 pr-2 py-1.5 text-sm font-medium border rounded bg-background focus:ring-2 focus:ring-primary/20 outline-none text-right"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            </div>
           ) : (
             <>
               <button
@@ -197,7 +220,7 @@ export function CartItemComponent({
                     onUpdateQuantity(item.product.id, val);
                   }
                 }}
-                className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"} text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"} rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none`}
+                className={`${isResponsive ? "w-14 h-11" : "w-12 h-8"} text-center font-semibold text-sm bg-transparent border ${isResponsive ? "border-input" : "border-none"} rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none ${item.quantity === 0 ? "text-destructive" : ""}`}
                 style={{ MozAppearance: "textfield" }}
                 aria-label="Quantity"
               />
